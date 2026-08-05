@@ -1,0 +1,189 @@
+:root {
+  --bg: #1c1b19;
+  --surface: #262421;
+  --text: #f0ebe1;
+  --text-muted: #a69c8e;
+  --accent: #c09553;
+  --accent-dark: #8a6a39;
+  --danger: #a8362e;
+  --success: #4a7a5e;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Work Sans", -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+header {
+  text-align: center;
+  padding: 16px 0 24px;
+}
+
+header .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+header p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.step-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.day-options {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+  padding-bottom: 4px;
+}
+
+.time-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.opt-btn {
+  background: var(--bg);
+  border: 1px solid #3a3733;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 6px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.opt-btn.selected {
+  border-color: var(--accent);
+  background: rgba(192, 149, 83, 0.15);
+}
+
+.opt-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.opt-btn .price {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.day-options .opt-btn {
+  flex: 0 0 auto;
+  min-width: 52px;
+  padding: 8px 12px;
+}
+
+.day-options .day-name {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.day-options .day-num {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+input[type="text"],
+input[type="tel"] {
+  background: var(--bg);
+  border: 1px solid #3a3733;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button.confirm {
+  width: 100%;
+  background: var(--accent);
+  color: #1c1b19;
+  border: none;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button.confirm:hover {
+  background: var(--accent-dark);
+  color: var(--text);
+}
+
+.summary {
+  font-size: 13px;
+  text-align: center;
+  margin: 12px 0 0;
+  min-height: 18px;
+}
+
+.summary.error {
+  color: var(--danger);
+}
+
+.summary.ok {
+  color: var(--success);
+}

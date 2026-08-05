@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbería Cordobani — Reservá tu turno</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">✂️ Barbería Cordobani</div>
+      <p>Reservá tu turno en menos de un minuto</p>
+    </header>
+
+    <div class="card">
+      <p class="step-label">1. Elegí el servicio</p>
+      <div class="options" id="services">
+        <button class="opt-btn" data-val="Corte" data-price="$6.000">
+          <span>Corte</span>
+          <span class="price">$6.000</span>
+        </button>
+        <button class="opt-btn" data-val="Corte + barba" data-price="$9.000">
+          <span>Corte + barba</span>
+          <span class="price">$9.000</span>
+        </button>
+        <button class="opt-btn" data-val="Barba" data-price="$4.000">
+          <span>Barba</span>
+          <span class="price">$4.000</span>
+        </button>
+      </div>
+
+      <p class="step-label">2. Elegí el día</p>
+      <div class="day-options" id="days"></div>
+
+      <p class="step-label">3. Elegí el horario</p>
+      <div class="time-options" id="times"></div>
+
+      <p class="step-label">4. Tus datos</p>
+      <div class="field-group">
+        <input type="text" id="name" placeholder="Nombre y apellido" />
+        <input type="tel" id="phone" placeholder="Tu teléfono" />
+      </div>
+
+      <button class="confirm" id="confirm">Confirmar turno</button>
+      <p class="summary" id="summary"></p>
+    </div>
+  </div>
+
+  <script src="assets/script.js"></script>
+</body>
+</html>
