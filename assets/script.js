@@ -2,7 +2,7 @@
 const WEBHOOK_URL = "https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno";
 
 // Horarios base de atención
-const HORARIOS = ["10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
+const HORARIOS = ["10:00", "10:30", "11:00", "11:30" , "12:00" , "12:30" , "13:00" , "13:30" , "14:00", "14:30", "15:00", "15:30", "16:00", "16:30" , "17:00" , "17:30" , "18:00" , "18:30" , "19:00" , "19:30" , "20:00" , "20:30" , "21:00" ];
 
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const DIA_NO_LABORAL = 0; // Domingo cerrado
