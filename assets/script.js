@@ -1,19 +1,19 @@
-// Cuando esté listo el flujo de n8n, reemplazar por la URL del webhook real.
+// Webhook de n8n para crear un turno
 const WEBHOOK_URL = "https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno";
 
-// Horarios base de atención (fijo por ahora, después configurable por el barbero).
+// Horarios base de atención
 const HORARIOS = ["10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
 
-// TODO: reemplazar por consulta real a n8n (turnos ya ocupados para el día elegido).
-const OCUPADOS_MOCK = { };
-
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const DIA_NO_LABORAL = 0; // domingo cerrado
+const DIA_NO_LABORAL = 0; // Domingo cerrado
 
-const state = { service: null, price: null, day: null, dayLabel: null, time: null };
+const state = { service: null, price: null, day: null, time: null };
 
 function buildDays(cantidad) {
   const cont = document.getElementById("days");
+  if (!cont) return;
+  cont.innerHTML = "";
+  
   const hoy = new Date();
   let agregados = 0;
   let offset = 1;
@@ -37,12 +37,15 @@ function buildDays(cantidad) {
 
 function buildTimes(ocupadosDelDia) {
   const cont = document.getElementById("times");
+  if (!cont) return;
   cont.innerHTML = "";
+  
   HORARIOS.forEach((hora) => {
     const btn = document.createElement("button");
     btn.className = "opt-btn";
     btn.dataset.val = hora;
     btn.textContent = hora;
+    
     if (ocupadosDelDia && ocupadosDelDia.includes(hora)) {
       btn.disabled = true;
     }
@@ -51,36 +54,40 @@ function buildTimes(ocupadosDelDia) {
 }
 
 function selectInGroup(containerId, key, priceKey) {
-  document.getElementById(containerId).addEventListener("click", (e) => {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.addEventListener("click", (e) => {
     const btn = e.target.closest(".opt-btn");
     if (!btn || btn.disabled) return;
 
-    document
-      .getElementById(containerId)
-      .querySelectorAll(".opt-btn")
-      .forEach((el) => el.classList.remove("selected"));
+    container.querySelectorAll(".opt-btn").forEach((el) => el.classList.remove("selected"));
     btn.classList.add("selected");
 
     state[key] = btn.dataset.val;
     if (priceKey) state[priceKey] = btn.dataset.price;
 
-    // Si cambia el día, recalcular horarios ocupados para ese día.
     if (key === "day") {
       state.time = null;
-      buildTimes(OCUPADOS_MOCK[btn.dataset.val] || []);
+      // Reconstruye horarios al cambiar de día
+      buildTimes([]); 
     }
   });
 }
 
 function showSummary(text, type) {
   const el = document.getElementById("summary");
+  if (!el) return;
   el.textContent = text;
   el.className = "summary" + (type ? " " + type : "");
 }
 
 async function confirmarTurno() {
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
+  const nameInput = document.getElementById("name");
+  const phoneInput = document.getElementById("phone");
+
+  const name = nameInput ? nameInput.value.trim() : "";
+  const phone = phoneInput ? phoneInput.value.trim() : "";
 
   if (!state.service || !state.day || !state.time) {
     showSummary("Falta elegir servicio, día u horario.", "error");
@@ -100,28 +107,41 @@ async function confirmarTurno() {
     telefono: phone,
   };
 
-  if (!WEBHOOK_URL) {
-    // Todavía no está conectado n8n: solo mostramos el resumen local.
-    showSummary(`Turno confirmado: ${turno.servicio} el ${turno.dia} a las ${turno.hora}`, "ok");
-    return;
-  }
-
   try {
     const res = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(turno),
     });
-    if (!res.ok) throw new Error("respuesta no ok");
-    showSummary(`Turno confirmado: ${turno.servicio} el ${turno.dia} a las ${turno.hora}`, "ok");
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      // Muestra el mensaje exacto enviado por n8n (ej: "Ese horario ya fue reservado")
+      showSummary(data.mensaje || "Ocurrió un error al procesar la reserva.", "error");
+      return;
+    }
+
+    let msg = `¡Turno confirmado para ${turno.nombre}! ${turno.servicio} el ${turno.dia} a las ${turno.hora}.`;
+    if (data.clienteFrecuente) {
+      msg += " ¡Gracias por elegirnos siempre (Cliente Frecuente)!";
+    }
+
+    showSummary(msg, "ok");
+
   } catch (err) {
-    showSummary("No se pudo guardar el turno. Probá de nuevo.", "error");
+    showSummary("No se pudo conectar con el servidor. Probá de nuevo más tarde.", "error");
   }
 }
 
+// Inicialización
 buildDays(6);
 buildTimes(null);
 selectInGroup("services", "service", "price");
 selectInGroup("days", "day");
 selectInGroup("times", "time");
-document.getElementById("confirm").addEventListener("click", confirmarTurno);
+
+const confirmBtn = document.getElementById("confirm");
+if (confirmBtn) {
+  confirmBtn.addEventListener("click", confirmarTurno);
+}
