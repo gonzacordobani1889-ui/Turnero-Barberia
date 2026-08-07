@@ -1,5 +1,5 @@
 // Cuando esté listo el flujo de n8n, reemplazar por la URL del webhook real.
-const WEBHOOK_URL = "";
+const WEBHOOK_URL = "https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno";
 
 // Horarios base de atención (fijo por ahora, después configurable por el barbero).
 const HORARIOS = ["10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
