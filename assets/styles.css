@@ -142,7 +142,8 @@ header p {
 }
 
 input[type="text"],
-input[type="tel"] {
+input[type="tel"],
+input[type="email"] {
   background: var(--bg);
   border: 1px solid #3a3733;
   color: var(--text);
