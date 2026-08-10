@@ -85,9 +85,11 @@ function showSummary(text, type) {
 async function confirmarTurno() {
   const nameInput = document.getElementById("name");
   const phoneInput = document.getElementById("phone");
+  const mailInput = document.getElementById("mail");
 
   const name = nameInput ? nameInput.value.trim() : "";
   const phone = phoneInput ? phoneInput.value.trim() : "";
+  const mail = mailInput ? mailInput.value.trim() : "";
 
   if (!state.service || !state.day || !state.time) {
     showSummary("Falta elegir servicio, día u horario.", "error");
@@ -95,6 +97,10 @@ async function confirmarTurno() {
   }
   if (!name || !phone) {
     showSummary("Falta el nombre o el teléfono.", "error");
+    return;
+  }
+  if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+    showSummary("Falta un mail válido (lo usamos para el recordatorio).", "error");
     return;
   }
 
@@ -105,6 +111,7 @@ async function confirmarTurno() {
     hora: state.time,
     nombre: name,
     telefono: phone,
+    mail: mail,
   };
 
   try {
