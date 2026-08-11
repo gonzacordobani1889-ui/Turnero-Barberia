@@ -1,25 +1,57 @@
+// URL del Webhook Admin en n8n
 const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
 
+// Clave de acceso requerida para el barbero
+const CLAVE_SECRETA = "1234"; 
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Establecer fecha de hoy por defecto
+  if (!verificarAcceso()) return;
+
   const hoy = new Date().toISOString().split("T")[0];
   const inputFecha = document.getElementById("filtro-fecha");
   if (inputFecha) inputFecha.value = hoy;
 
   document.getElementById("btn-cargar")?.addEventListener("click", cargarAgenda);
   
-  // Carga inicial
   cargarAgenda();
 });
 
+// Autenticación con PIN persistente por sesión
+function verificarAcceso() {
+  let pinGuardado = sessionStorage.getItem("barbero_pin");
+
+  if (pinGuardado !== CLAVE_SECRETA) {
+    const pinIngresado = prompt("🔐 Ingresá la clave de acceso del barbero:");
+    
+    if (pinIngresado === CLAVE_SECRETA) {
+      sessionStorage.setItem("barbero_pin", pinIngresado);
+      return true;
+    } else {
+      alert("Clave incorrecta. Acceso denegado.");
+      document.body.innerHTML = "<h2 style='color: white; text-align: center; margin-top: 50px;'>Acceso no autorizado</h2>";
+      return false;
+    }
+  }
+  return true;
+}
+
+// Obtiene la agenda del día desde n8n enviando el PIN
 async function cargarAgenda() {
   const fecha = document.getElementById("filtro-fecha").value;
+  const pin = sessionStorage.getItem("barbero_pin");
   const cont = document.getElementById("lista-turnos");
   cont.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>Cargando agenda...</p>";
 
   try {
-    const res = await fetch(`${WEBHOOK_ADMIN}?accion=obtener&dia=${fecha}`);
+    const res = await fetch(`${WEBHOOK_ADMIN}?accion=obtener&dia=${fecha}&token=${encodeURIComponent(pin)}`);
     const data = await res.json();
+
+    if (data.error || res.status === 401) {
+      alert("Sesión no autorizada o PIN incorrecto.");
+      sessionStorage.removeItem("barbero_pin");
+      location.reload();
+      return;
+    }
 
     if (!data.turnos || data.turnos.length === 0) {
       cont.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>No hay turnos registrados para este día.</p>";
@@ -34,6 +66,7 @@ async function cargarAgenda() {
   }
 }
 
+// Dibuja las tarjetas de turnos e historial
 function renderizarTurnos(turnos) {
   const cont = document.getElementById("lista-turnos");
   cont.innerHTML = "";
@@ -43,9 +76,9 @@ function renderizarTurnos(turnos) {
 
   turnos.forEach(t => {
     const esCancelado = t.estado === "cancelado";
-    if (esCancelado) cancelados++;
-    else {
-      // Suma precio quitando formato $ y puntos
+    if (esCancelado) {
+      cancelados++;
+    } else {
       const numPrecio = parseInt((t.precio || "0").replace(/[^0-9]/g, "")) || 0;
       totalCaja += numPrecio;
     }
@@ -92,10 +125,12 @@ function actualizarStats(total, caja, cancelados) {
   document.getElementById("stat-cancelados").textContent = cancelados;
 }
 
-// ACCIÓN 1: Avisar Demora
+// Acción 1: Enviar aviso de retraso al cliente
 async function avisarDemora(id, telefono, nombre, hora) {
   const minutos = prompt(`¿Cuántos minutos de demora querés avisarle a ${nombre}? (ej: 15)`, "15");
   if (!minutos) return;
+
+  const pin = sessionStorage.getItem("barbero_pin");
 
   try {
     const res = await fetch(WEBHOOK_ADMIN, {
@@ -103,6 +138,7 @@ async function avisarDemora(id, telefono, nombre, hora) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         accion: "avisar_demora",
+        token: pin,
         id,
         telefono,
         nombre,
@@ -112,15 +148,17 @@ async function avisarDemora(id, telefono, nombre, hora) {
     });
     
     const data = await res.json();
-    alert(data.mensaje || "Aviso enviado al cliente.");
+    alert(data.mensaje || "Aviso de demora enviado correctamente.");
   } catch (err) {
     alert("Error al enviar el aviso de demora.");
   }
 }
 
-// ACCIÓN 2: Cancelar Turno por parte del Barbero
+// Acción 2: Cancelar turno desde el panel del barbero
 async function cancelarTurnoBarbero(id) {
   if (!confirm("¿Seguro que querés cancelar este turno?")) return;
+
+  const pin = sessionStorage.getItem("barbero_pin");
 
   try {
     const res = await fetch(WEBHOOK_ADMIN, {
@@ -128,6 +166,7 @@ async function cancelarTurnoBarbero(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         accion: "cancelar",
+        token: pin,
         id,
         canceladoPor: "barbero"
       })
@@ -135,7 +174,7 @@ async function cancelarTurnoBarbero(id) {
 
     const data = await res.json();
     alert(data.mensaje || "Turno cancelado.");
-    cargarAgenda(); // Recargar lista
+    cargarAgenda();
   } catch (err) {
     alert("Error al cancelar el turno.");
   }
