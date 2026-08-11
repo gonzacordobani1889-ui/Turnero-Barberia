@@ -1,4 +1,3 @@
-// URL del Webhook Admin en n8n
 const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btn-cargar")?.addEventListener("click", cargarAgenda);
 
-  // Verificar si hay credenciales guardadas en la sesión
   if (sessionStorage.getItem("barbero_user") && sessionStorage.getItem("barbero_pass")) {
     cargarAgenda();
   } else {
@@ -16,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Muestra el formulario de Login sobre la pantalla
 function mostrarPantallaLogin() {
   let modal = document.getElementById("login-modal");
 
@@ -25,32 +22,30 @@ function mostrarPantallaLogin() {
     modal.id = "login-modal";
     modal.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85); display: flex; align-items: center;
+      background: rgba(0, 0, 0, 0.88); display: flex; align-items: center;
       justify-content: center; z-index: 9999; backdrop-filter: blur(5px);
     `;
 
     modal.innerHTML = `
-      <div style="background: #1e1e1e; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #333; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <h2 style="margin-top: 0; color: var(--accent, #f39c12);">Panel Barbero</h2>
-        <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Ingresá tus credenciales para continuar</p>
+      <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 88%; max-width: 340px; text-align: center; border: 1px solid #333; color: white;">
+        <h2 style="margin-top: 0; color: #f39c12;">Panel Barbero</h2>
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 18px;">Ingresá con tus credenciales</p>
         
-        <input type="text" id="auth-user" placeholder="Usuario" style="width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box;">
-        <input type="password" id="auth-pass" placeholder="Contraseña" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box;">
+        <input type="text" id="auth-user" placeholder="Usuario" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; font-size: 16px;">
+        <input type="password" id="auth-pass" placeholder="Contraseña" style="width: 100%; padding: 12px; margin-bottom: 18px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; font-size: 16px;">
         
-        <button id="btn-login" style="width: 100%; padding: 12px; border-radius: 6px; border: none; background: var(--accent, #f39c12); color: black; font-weight: bold; cursor: pointer;">Ingresar</button>
-        <p id="login-error" style="color: #f87171; font-size: 12px; margin-top: 12px; display: none;"></p>
+        <button id="btn-login" style="width: 100%; padding: 12px; border-radius: 6px; border: none; background: #f39c12; color: black; font-weight: bold; font-size: 16px; cursor: pointer;">Ingresar</button>
+        <p id="login-error" style="color: #f87171; font-size: 12px; margin-top: 10px; display: none;"></p>
       </div>
     `;
 
     document.body.appendChild(modal);
-
     document.getElementById("btn-login").addEventListener("click", ejecutarLogin);
   } else {
     modal.style.display = "flex";
   }
 }
 
-// Procesa el formulario de login
 async function ejecutarLogin() {
   const user = document.getElementById("auth-user").value.trim();
   const pass = document.getElementById("auth-pass").value.trim();
@@ -78,7 +73,6 @@ async function ejecutarLogin() {
   }
 }
 
-// Obtiene la agenda desde n8n validando credenciales
 async function cargarAgenda() {
   const fecha = document.getElementById("filtro-fecha").value;
   const user = sessionStorage.getItem("barbero_user");
@@ -94,11 +88,12 @@ async function cargarAgenda() {
 
   try {
     const res = await fetch(`${WEBHOOK_ADMIN}?accion=obtener&dia=${fecha}&usuario=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
-    const data = await res.json();
+    const textData = await res.text();
+    
+    if (!textData) return false;
+    const data = JSON.parse(textData);
 
-    if (data.error || res.status === 401) {
-      return false;
-    }
+    if (data.error || res.status === 401) return false;
 
     if (!data.turnos || data.turnos.length === 0) {
       if (cont) cont.innerHTML = "<p style='text-align:center; color:var(--text-muted);'>No hay turnos registrados para este día.</p>";
@@ -115,7 +110,6 @@ async function cargarAgenda() {
   }
 }
 
-// Dibuja las tarjetas de turnos e historial
 function renderizarTurnos(turnos) {
   const cont = document.getElementById("lista-turnos");
   if (!cont) return;
@@ -135,30 +129,36 @@ function renderizarTurnos(turnos) {
 
     const card = document.createElement("div");
     card.className = `admin-card ${esCancelado ? "cancelado" : ""}`;
-    
+    card.style.cssText = "background: #242424; border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid #333;";
+
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: start;">
         <div>
-          <strong style="font-size: 16px; color: var(--accent);">${t.hora} hs</strong>
-          <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">ID: ${t.id || 'N/A'}</span>
-          <h4 style="margin: 4px 0 2px; font-size: 15px;">${t.nombre}</h4>
-          <p style="margin: 0; font-size: 12px; color: var(--text-muted);">${t.servicio} (${t.precio})</p>
-          <p style="margin: 2px 0 0; font-size: 12px; color: var(--text-muted);">📱 ${t.telefono}</p>
+          <strong style="font-size: 18px; color: #f39c12;">${t.hora} hs</strong>
+          <span style="font-size: 11px; color: #888; margin-left: 6px;">ID: ${t.id || 'N/A'}</span>
+          <h4 style="margin: 4px 0 2px; font-size: 16px; color: #fff;">${t.nombre}</h4>
+          <p style="margin: 0; font-size: 13px; color: #aaa;">${t.servicio} (${t.precio})</p>
+          <p style="margin: 2px 0 0; font-size: 13px; color: #aaa;">📱 ${t.telefono}</p>
         </div>
         <div style="text-align: right;">
-          <span class="badge ${esCancelado ? 'badge-warn' : 'badge-ok'}">${(t.estado || 'confirmado').toUpperCase()}</span>
-          <div style="margin-top: 6px; font-size: 11px; color: var(--text-muted);">
-            Historial:<br>
-            <strong>${t.visitasPrevias || 0} asistencias</strong> | 
-            <span style="color: ${t.cancelacionesPrevias > 0 ? '#f87171' : 'inherit'};">${t.cancelacionesPrevias || 0} cancelados</span>
+          <span style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: ${esCancelado ? '#ef444422' : '#22c55e22'}; color: ${esCancelado ? '#f87171' : '#4ade80'};">
+            ${(t.estado || 'confirmado').toUpperCase()}
+          </span>
+          <div style="margin-top: 6px; font-size: 11px; color: #888;">
+            Asistencias: <strong>${t.visitasPrevias || 0}</strong> | Cancelados: <span style="color: ${t.cancelacionesPrevias > 0 ? '#f87171' : 'inherit'};">${t.cancelacionesPrevias || 0}</span>
           </div>
         </div>
       </div>
 
       ${!esCancelado ? `
-        <div class="card-actions">
-          <button class="btn-action" onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}')">⏳ Avisar Demora</button>
-          <button class="btn-action btn-danger" onclick="cancelarTurnoBarbero('${t.id}')">❌ Cancelar</button>
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #333;">
+          <p style="margin: 0 0 6px 0; font-size: 11px; color: #aaa;">⏳ Notificar demora al cliente:</p>
+          <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+            <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 10)" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #f39c12; background: transparent; color: #f39c12; font-size: 12px; font-weight: bold; cursor: pointer;">+10 min</button>
+            <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 15)" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #f39c12; background: transparent; color: #f39c12; font-size: 12px; font-weight: bold; cursor: pointer;">+15 min</button>
+            <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 20)" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #f39c12; background: transparent; color: #f39c12; font-size: 12px; font-weight: bold; cursor: pointer;">+20 min</button>
+          </div>
+          <button onclick="cancelarTurnoBarbero('${t.id}')" style="width: 100%; padding: 8px; border-radius: 6px; border: none; background: #ef444422; color: #f87171; font-size: 12px; font-weight: bold; cursor: pointer;">❌ Cancelar Turno</button>
         </div>
       ` : ''}
     `;
@@ -175,10 +175,9 @@ function actualizarStats(total, caja, cancelados) {
   if (document.getElementById("stat-cancelados")) document.getElementById("stat-cancelados").textContent = cancelados;
 }
 
-// Acciones con credenciales adjuntas
-async function avisarDemora(id, telefono, nombre, hora) {
-  const minutos = prompt(`¿Cuántos minutos de demora querés avisarle a ${nombre}? (ej: 15)`, "15");
-  if (!minutos) return;
+// Envío inmediato de demora con botón
+async function avisarDemora(id, telefono, nombre, hora, minutos) {
+  if (!confirm(`¿Avisar a ${nombre} que vas ${minutos} minutos demorado?`)) return;
 
   const user = sessionStorage.getItem("barbero_user");
   const pass = sessionStorage.getItem("barbero_pass");
@@ -196,9 +195,9 @@ async function avisarDemora(id, telefono, nombre, hora) {
     });
     
     const data = await res.json();
-    alert(data.mensaje || "Aviso de demora enviado correctamente.");
+    alert(data.mensaje || `Aviso de ${minutos} min de demora enviado.`);
   } catch (err) {
-    alert("Error al enviar el aviso de demora.");
+    alert("Error al enviar la notificación de demora.");
   }
 }
 
