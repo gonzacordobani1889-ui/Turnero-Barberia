@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Barbero — Barbería Cordobani</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .admin-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+    .admin-card.cancelado { border-left-color: var(--danger); opacity: 0.6; }
+    .badge { background: #3a3733; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-muted); }
+    .badge-ok { background: rgba(74, 122, 94, 0.3); color: #6bc98e; }
+    .badge-warn { background: rgba(168, 54, 46, 0.3); color: #f87171; }
+    .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-action { flex: 1; padding: 8px; font-size: 12px; border-radius: 6px; border: 1px solid #3a3733; background: var(--bg); color: var(--text); cursor: pointer; }
+    .btn-action:hover { border-color: var(--accent); }
+    .btn-danger { color: #f87171; }
+    .btn-danger:hover { background: rgba(168, 54, 46, 0.2); }
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; text-align: center; }
+    .stat-box { background: var(--surface); padding: 12px; border-radius: 8px; }
+    .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); }
+    .stat-label { font-size: 11px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">✂️ Agenda Barbero</div>
+      <p>Gestión de turnos y avisos</p>
+    </header>
+
+    <!-- Filtro de Fecha -->
+    <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
+      <label style="font-size: 13px; color: var(--text-muted);">Fecha:</label>
+      <input type="date" id="filtro-fecha" style="flex: 1;" />
+      <button class="confirm" id="btn-cargar" style="width: auto; padding: 8px 16px; font-size: 13px;">Cargar</button>
+    </div>
+
+    <!-- Barra de Métricas Rápidas -->
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Turnos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="stat-caja">$0</div>
+        <div class="stat-label">Estimado</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="stat-cancelados">0</div>
+        <div class="stat-label">Cancelados</div>
+      </div>
+    </div>
+
+    <!-- Lista de Turnos -->
+    <div id="lista-turnos">
+      <p style="text-align: center; color: var(--text-muted);">Seleccioná una fecha para ver la agenda.</p>
+    </div>
+  </div>
+
+  <script src="assets/admin.js"></script>
+</body>
+</html>
