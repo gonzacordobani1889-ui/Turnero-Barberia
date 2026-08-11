@@ -1,154 +1,167 @@
-// Webhook de n8n para crear un turno
 const WEBHOOK_URL = "https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno";
 
-// Horarios base de atención
-const HORARIOS = ["10:00", "10:30", "11:00", "11:30" , "12:00" , "12:30" , "13:00" , "13:30" , "14:00", "14:30", "15:00", "15:30", "16:00", "16:30" , "17:00" , "17:30" , "18:00" , "18:30" , "19:00" , "19:30" , "20:00" , "20:30" , "21:00" ];
+// Estado de la reserva
+const state = {
+  servicio: null,
+  precio: null,
+  dia: null, // Formato YYYY-MM-DD
+  hora: null,
+  nombre: "",
+  telefono: "",
+  mail: ""
+};
 
-const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const DIA_NO_LABORAL = 0; // Domingo cerrado
+// Servicios y Precios alineados con la constante del nodo "Validar datos"
+const SERVICIOS = {
+  "Corte": "$12.000",
+  "Corte + barba": "$16.000",
+  "Barba": "$4.000"
+};
 
-const state = { service: null, price: null, day: null, time: null };
+// Horarios alineados con el array del nodo "Validar datos"
+const HORARIOS_VALIDOS = [
+  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", 
+  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", 
+  "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", 
+  "19:00", "19:30", "20:00", "20:30", "21:00"
+];
 
-function buildDays(cantidad) {
+// 1. GENERACIÓN DE DÍAS (Envía ISO YYYY-MM-DD)
+function cargarDias(cantidad = 7) {
   const cont = document.getElementById("days");
   if (!cont) return;
   cont.innerHTML = "";
-  
+
   const hoy = new Date();
   let agregados = 0;
   let offset = 1;
+
+  const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   while (agregados < cantidad) {
     const fecha = new Date(hoy);
     fecha.setDate(hoy.getDate() + offset);
     offset++;
 
-    if (fecha.getDay() === DIA_NO_LABORAL) continue;
+    if (fecha.getDay() === 0) continue; // Saltea domingos
+
+    // Genera string ISO YYYY-MM-DD en horario local
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dd = String(fecha.getDate()).padStart(2, "0");
+    const isoDate = `${yyyy}-${mm}-${dd}`;
 
     const btn = document.createElement("button");
-    btn.className = "opt-btn";
-    const label = `${DIAS_SEMANA[fecha.getDay()]} ${fecha.getDate()}`;
-    btn.dataset.val = label;
-    btn.innerHTML = `<span class="day-name">${DIAS_SEMANA[fecha.getDay()]}</span><span class="day-num">${fecha.getDate()}</span>`;
+    btn.className = "btn-dia";
+    btn.dataset.val = isoDate;
+    btn.innerHTML = `<span>${DIAS_SEMANA[fecha.getDay()]}</span> <strong>${fecha.getDate()}</strong>`;
+    
+    btn.addEventListener("click", () => seleccionarDia(isoDate, btn));
     cont.appendChild(btn);
     agregados++;
   }
 }
 
-function buildTimes(ocupadosDelDia) {
+// 2. CONSULTAR HORARIOS OCUPADOS (GET)
+async function seleccionarDia(fechaIso, btnElemento) {
+  state.dia = fechaIso;
+  state.hora = null;
+
+  document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("selected"));
+  btnElemento.classList.add("selected");
+
+  renderizarHorarios([], true);
+
+  try {
+    // El nodo "¿Es GET o POST?" detecta el método GET y ejecuta "Filtrar Ocupados"
+    const response = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(fechaIso)}`, {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    });
+
+    const data = await response.json();
+    const ocupados = data.ocupados || [];
+    
+    renderizarHorarios(ocupados, false);
+  } catch (err) {
+    console.error("Error al consultar disponibilidad:", err);
+    renderizarHorarios([], false);
+  }
+}
+
+// 3. DIBUJAR HORARIOS Y DESHABILITAR OCUPADOS
+function renderizarHorarios(ocupados = [], cargando = false) {
   const cont = document.getElementById("times");
   if (!cont) return;
   cont.innerHTML = "";
-  
-  HORARIOS.forEach((hora) => {
+
+  if (cargando) {
+    cont.innerHTML = "<p>Cargando horarios disponibles...</p>";
+    return;
+  }
+
+  HORARIOS_VALIDOS.forEach(hora => {
     const btn = document.createElement("button");
-    btn.className = "opt-btn";
-    btn.dataset.val = hora;
+    btn.className = "btn-hora";
     btn.textContent = hora;
     
-    if (ocupadosDelDia && ocupadosDelDia.includes(hora)) {
+    const estaOcupado = ocupados.includes(hora);
+    if (estaOcupado) {
       btn.disabled = true;
+      btn.classList.add("occupied");
+    } else {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".btn-hora").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        state.hora = hora;
+      });
     }
     cont.appendChild(btn);
   });
 }
 
-function selectInGroup(containerId, key, priceKey) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+// 4. ENVÍO DEL TURNO (POST)
+async function enviarReserva() {
+  state.nombre = document.getElementById("input-nombre")?.value.trim() || "";
+  state.telefono = document.getElementById("input-telefono")?.value.trim() || "";
+  state.mail = document.getElementById("input-mail")?.value.trim() || "";
 
-  container.addEventListener("click", (e) => {
-    const btn = e.target.closest(".opt-btn");
-    if (!btn || btn.disabled) return;
-
-    container.querySelectorAll(".opt-btn").forEach((el) => el.classList.remove("selected"));
-    btn.classList.add("selected");
-
-    state[key] = btn.dataset.val;
-    if (priceKey) state[priceKey] = btn.dataset.price;
-
-    if (key === "day") {
-      state.time = null;
-      // Reconstruye horarios al cambiar de día
-      buildTimes([]); 
-    }
-  });
-}
-
-function showSummary(text, type) {
-  const el = document.getElementById("summary");
-  if (!el) return;
-  el.textContent = text;
-  el.className = "summary" + (type ? " " + type : "");
-}
-
-async function confirmarTurno() {
-  const nameInput = document.getElementById("name");
-  const phoneInput = document.getElementById("phone");
-  const mailInput = document.getElementById("mail");
-
-  const name = nameInput ? nameInput.value.trim() : "";
-  const phone = phoneInput ? phoneInput.value.trim() : "";
-  const mail = mailInput ? mailInput.value.trim() : "";
-
-  if (!state.service || !state.day || !state.time) {
-    showSummary("Falta elegir servicio, día u horario.", "error");
-    return;
-  }
-  if (!name || !phone) {
-    showSummary("Falta el nombre o el teléfono.", "error");
-    return;
-  }
-  if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
-    showSummary("Falta un mail válido (lo usamos para el recordatorio).", "error");
-    return;
+  if (state.servicio && SERVICIOS[state.servicio]) {
+    state.precio = SERVICIOS[state.servicio];
   }
 
-  const turno = {
-    servicio: state.service,
-    precio: state.price,
-    dia: state.day,
-    hora: state.time,
-    nombre: name,
-    telefono: phone,
-    mail: mail,
+  // Payload estructurado según la lectura del nodo "Validar datos"
+  const payload = {
+    servicio: state.servicio,
+    precio: state.precio,
+    dia: state.dia,
+    hora: state.hora,
+    nombre: state.nombre,
+    telefono: state.telefono,
+    mail: state.mail
   };
 
   try {
-    const res = await fetch(WEBHOOK_URL, {
+    const response = await fetch(WEBHOOK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(turno),
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok || !data.ok) {
-      // Muestra el mensaje exacto enviado por n8n (ej: "Ese horario ya fue reservado")
-      showSummary(data.mensaje || "Ocurrió un error al procesar la reserva.", "error");
-      return;
+    if (response.ok && data.ok) {
+      alert(`¡Reserva confirmada! ${data.clienteFrecuente ? "¡Gracias por elegirnos nuevamente!" : ""}`);
+      location.reload();
+    } else {
+      // Muestra el mensaje devuelto por los nodos "Error - rate limit", "Error - datos inválidos" o "Error - ocupado"
+      alert(`No se pudo reservar: ${data.mensaje || "Ocurrió un problema."}`);
     }
-
-    let msg = `¡Turno confirmado para ${turno.nombre}! ${turno.servicio} el ${turno.dia} a las ${turno.hora}.`;
-    if (data.clienteFrecuente) {
-      msg += " ¡Gracias por elegirnos siempre (Cliente Frecuente)!";
-    }
-
-    showSummary(msg, "ok");
-
-  } catch (err) {
-    showSummary("No se pudo conectar con el servidor. Probá de nuevo más tarde.", "error");
+  } catch (error) {
+    console.error("Error en el envío:", error);
+    alert("Error de conexión al procesar la reserva.");
   }
-}
-
-// Inicialización
-buildDays(6);
-buildTimes(null);
-selectInGroup("services", "service", "price");
-selectInGroup("days", "day");
-selectInGroup("times", "time");
-
-const confirmBtn = document.getElementById("confirm");
-if (confirmBtn) {
-  confirmBtn.addEventListener("click", confirmarTurno);
 }
