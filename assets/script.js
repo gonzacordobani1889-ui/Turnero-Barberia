@@ -30,7 +30,7 @@ const HORARIOS_VALIDOS = [
 // Nombres de días
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-// Inicialización
+// Inicialización cuando carga la página
 document.addEventListener("DOMContentLoaded", () => {
   cargarDias(7);
   configurarServicios();
@@ -52,7 +52,7 @@ function cargarDias(cantidad = 7) {
     fecha.setDate(hoy.getDate() + offset);
     offset++;
 
-    // Saltear domingos (si el negocio no abre)
+    // Saltear domingos
     if (fecha.getDay() === 0) continue;
 
     const yyyy = fecha.getFullYear();
@@ -72,7 +72,7 @@ function cargarDias(cantidad = 7) {
   }
 }
 
-// 2. SELECCIONAR DÍA Y CONSULTAR OCUPADOS (Petición GET)
+// 2. SELECCIONAR DÍA Y CONSULTAR OCUPADOS (Petición GET al flujo inferior de n8n)
 async function seleccionarDia(fechaIso, btnElemento) {
   state.dia = fechaIso;
   state.hora = null;
@@ -83,7 +83,6 @@ async function seleccionarDia(fechaIso, btnElemento) {
   renderizarHorarios([], true);
 
   try {
-    // Consulta los horarios ocupados a n8n por GET
     const response = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(fechaIso)}`, {
       method: "GET",
       headers: { "Accept": "application/json" }
@@ -106,7 +105,7 @@ function renderizarHorarios(ocupados = [], cargando = false) {
   cont.innerHTML = "";
 
   if (cargando) {
-    cont.innerHTML = "<p class='loading-text'>Cargando horarios...</p>";
+    cont.innerHTML = "<p class='loading-text' style='grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 13px;'>Cargando horarios disponibles...</p>";
     return;
   }
 
@@ -131,49 +130,51 @@ function renderizarHorarios(ocupados = [], cargando = false) {
   });
 }
 
-// 4. SELECCIÓN DE SERVICIO
+// 4. SELECCIÓN DE SERVICIO (Sincronizado con tus botones HTML #services .opt-btn)
 function configurarServicios() {
-  const botonesServicio = document.querySelectorAll(".btn-servicio");
+  const botonesServicio = document.querySelectorAll("#services .opt-btn");
   botonesServicio.forEach(btn => {
     btn.addEventListener("click", () => {
       botonesServicio.forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       
-      const nombreServicio = btn.dataset.servicio;
+      const nombreServicio = btn.dataset.val; // Lee data-val del HTML
       if (SERVICIOS[nombreServicio]) {
         state.servicio = nombreServicio;
-        state.precio = SERVICIOS[nombreServicio];
+        state.precio = btn.dataset.price || SERVICIOS[nombreServicio]; // Lee data-price
       }
     });
   });
 }
 
-// 5. CONFIGURAR EVENTO DE ENVÍO
+// 5. CONFIGURAR EVENTO DE ENVÍO (Escucha el botón #confirm)
 function configurarFormulario() {
-  const form = document.getElementById("form-reserva");
-  if (!form) return;
+  const btnConfirmar = document.getElementById("confirm");
+  if (!btnConfirmar) return;
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  btnConfirmar.addEventListener("click", async () => {
     await enviarReserva();
   });
 }
 
-// 6. ENVIAR RESERVA (Petición POST)
+// 6. ENVIAR RESERVA (Petición POST al flujo superior de n8n)
 async function enviarReserva() {
-  state.nombre = document.getElementById("input-nombre")?.value.trim() || "";
-  state.telefono = document.getElementById("input-telefono")?.value.trim() || "";
-  state.mail = document.getElementById("input-mail")?.value.trim() || "";
+  // Captura valores desde las IDs exactas de tu HTML (name, phone, mail)
+  state.nombre = document.getElementById("name")?.value.trim() || "";
+  state.telefono = document.getElementById("phone")?.value.trim() || "";
+  state.mail = document.getElementById("mail")?.value.trim() || "";
 
-  // Validaciones rápidas en cliente antes de enviar
-  if (!state.servicio) return alert("Por favor, selecciona un servicio.");
-  if (!state.dia) return alert("Por favor, selecciona un día.");
-  if (!state.hora) return alert("Por favor, selecciona un horario.");
-  if (!state.nombre) return alert("Por favor, ingresa tu nombre.");
-  if (!state.telefono) return alert("Por favor, ingresa tu teléfono.");
+  // Validaciones antes de enviar
+  if (!state.servicio) return mostrarMensaje("Por favor, elegí un servicio.", "error");
+  if (!state.dia) return mostrarMensaje("Por favor, elegí un día.", "error");
+  if (!state.hora) return mostrarMensaje("Por favor, elegí un horario.", "error");
+  if (!state.nombre) return mostrarMensaje("Por favor, ingresá tu nombre y apellido.", "error");
+  if (!state.telefono) return mostrarMensaje("Por favor, ingresá tu teléfono.", "error");
 
-  const btnSubmit = document.getElementById("btn-submit");
-  if (btnSubmit) btnSubmit.disabled = true;
+  const btnConfirm = document.getElementById("confirm");
+  if (btnConfirm) btnConfirm.disabled = true;
+
+  mostrarMensaje("Procesando reserva...", "");
 
   const payload = {
     servicio: state.servicio,
@@ -201,19 +202,30 @@ async function enviarReserva() {
       const mensajeFinal = data.clienteFrecuente 
         ? "¡Reserva confirmada! Gracias por elegirnos nuevamente."
         : "¡Reserva confirmada con éxito!";
-      alert(mensajeFinal);
-      location.reload();
+      
+      mostrarMensaje(mensajeFinal, "ok");
+      setTimeout(() => location.reload(), 3000);
     } else {
-      alert(`No se pudo realizar la reserva: ${data.mensaje || "Horario no disponible."}`);
+      mostrarMensaje(`No se pudo realizar la reserva: ${data.mensaje || "Horario no disponible."}`, "error");
+      
+      // Recarga horarios por si alguien lo ocupó recíprocamente
       if (state.dia) {
-        // Recarga los horarios para reflejar los turnos tomados recientemente
-        seleccionarDia(state.dia, document.querySelector(`.btn-dia[data-val="${state.dia}"]`));
+        const btnDiaActual = document.querySelector(`.btn-dia[data-val="${state.dia}"]`);
+        if (btnDiaActual) seleccionarDia(state.dia, btnDiaActual);
       }
     }
   } catch (error) {
     console.error("Error al enviar reserva:", error);
-    alert("Ocurrió un error de conexión al procesar la reserva. Intenta de nuevo.");
+    mostrarMensaje("Error de conexión al procesar la reserva. Intentá de nuevo.", "error");
   } finally {
-    if (btnSubmit) btnSubmit.disabled = false;
+    if (btnConfirm) btnConfirm.disabled = false;
   }
+}
+
+// Función auxiliar para mostrar mensajes en la etiqueta <p id="summary">
+function mostrarMensaje(texto, tipo) {
+  const summary = document.getElementById("summary");
+  if (!summary) return;
+  summary.className = `summary ${tipo}`;
+  summary.textContent = texto;
 }
