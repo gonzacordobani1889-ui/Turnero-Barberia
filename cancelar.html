@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cancelar Turno — Barbería Cordobani</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">✂️ Barbería Cordobani</div>
+      <p>Cancelación de turno</p>
+    </header>
+    <div class="card">
+      <p class="step-label">Ingresá los datos de tu reserva</p>
+      <div class="field-group">
+        <input type="text" id="cancel-id" placeholder="Código de Turno (ej: TB-4821)" />
+        <input type="tel" id="cancel-phone" placeholder="Tu número de teléfono" />
+      </div>
+      <button class="confirm" id="btn-cancelar-cliente" style="background: var(--danger); color: #fff;">Cancelar Mi Turno</button>
+      <p class="summary" id="cancel-summary"></p>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
+
+    document.getElementById("btn-cancelar-cliente").addEventListener("click", async () => {
+      const id = document.getElementById("cancel-id").value.trim();
+      const telefono = document.getElementById("cancel-phone").value.trim();
+      const summary = document.getElementById("cancel-summary");
+
+      if (!id || !telefono) {
+        summary.className = "summary error";
+        summary.textContent = "Por favor, completá ambos campos.";
+        return;
+      }
+
+      if (!confirm("¿Estás seguro de que deseas cancelar tu turno?")) return;
+
+      summary.className = "summary";
+      summary.textContent = "Procesando cancelación...";
+
+      try {
+        const res = await fetch(WEBHOOK_ADMIN, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            accion: "cancelar_cliente",
+            id,
+            telefono
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.ok) {
+          summary.className = "summary ok";
+          summary.textContent = "Tu turno ha sido cancelado con éxito.";
+        } else {
+          summary.className = "summary error";
+          summary.textContent = data.mensaje || "No se encontró un turno con esos datos.";
+        }
+      } catch (err) {
+        summary.className = "summary error";
+        summary.textContent = "Error de conexión al intentar cancelar.";
+      }
+    });
+  </script>
+</body>
+</html>
