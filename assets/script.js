@@ -138,10 +138,10 @@ function configurarServicios() {
       botonesServicio.forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       
-      const nombreServicio = btn.dataset.val; // Lee data-val del HTML
+      const nombreServicio = btn.dataset.val;
       if (SERVICIOS[nombreServicio]) {
         state.servicio = nombreServicio;
-        state.precio = btn.dataset.price || SERVICIOS[nombreServicio]; // Lee data-price
+        state.precio = btn.dataset.price || SERVICIOS[nombreServicio];
       }
     });
   });
@@ -157,14 +157,12 @@ function configurarFormulario() {
   });
 }
 
-// 6. ENVIAR RESERVA (Petición POST al flujo superior de n8n)
+// 6. ENVIAR RESERVA (Petición POST a n8n y tarjeta interactiva de confirmación)
 async function enviarReserva() {
-  // Captura valores desde las IDs exactas de tu HTML (name, phone, mail)
   state.nombre = document.getElementById("name")?.value.trim() || "";
   state.telefono = document.getElementById("phone")?.value.trim() || "";
   state.mail = document.getElementById("mail")?.value.trim() || "";
 
-  // Validaciones antes de enviar
   if (!state.servicio) return mostrarMensaje("Por favor, elegí un servicio.", "error");
   if (!state.dia) return mostrarMensaje("Por favor, elegí un día.", "error");
   if (!state.hora) return mostrarMensaje("Por favor, elegí un horario.", "error");
@@ -199,16 +197,26 @@ async function enviarReserva() {
     const data = await response.json();
 
     if (response.ok && data.ok) {
-      const mensajeFinal = data.clienteFrecuente 
-        ? "¡Reserva confirmada! Gracias por elegirnos nuevamente."
-        : "¡Reserva confirmada con éxito!";
-      
-      mostrarMensaje(mensajeFinal, "ok");
-      setTimeout(() => location.reload(), 3000);
+      const summary = document.getElementById("summary");
+      if (summary) {
+        summary.className = "summary ok";
+        summary.innerHTML = `
+          <div style="background: #1e1e1e; border: 1px solid #22c55e; padding: 18px; border-radius: 12px; text-align: center; margin-top: 15px; color: white;">
+            <h3 style="color: #4ade80; margin: 0 0 8px 0; font-size: 18px;">¡Reserva Confirmada! 🎉</h3>
+            <p style="margin: 4px 0; font-size: 14px;"><strong>Turno:</strong> ${state.dia} a las ${state.hora} hs</p>
+            <p style="margin: 4px 0; font-size: 14px;"><strong>Servicio:</strong> ${state.servicio} (${state.precio})</p>
+            <p style="margin: 4px 0; font-size: 12px; color: #aaa;">Código de reserva: <strong>${data.id || 'N/A'}</strong></p>
+            
+            <a href="cancelar.html?id=${encodeURIComponent(data.id || '')}&tel=${encodeURIComponent(state.telefono)}" 
+               style="display: inline-block; margin-top: 14px; padding: 10px 16px; background: #ef444422; border: 1px solid #ef4444; color: #f87171; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold;">
+               ❌ Cancelar o modificar esta reserva
+            </a>
+          </div>
+        `;
+      }
     } else {
       mostrarMensaje(`No se pudo realizar la reserva: ${data.mensaje || "Horario no disponible."}`, "error");
       
-      // Recarga horarios por si alguien lo ocupó recíprocamente
       if (state.dia) {
         const btnDiaActual = document.querySelector(`.btn-dia[data-val="${state.dia}"]`);
         if (btnDiaActual) seleccionarDia(state.dia, btnDiaActual);
@@ -222,7 +230,7 @@ async function enviarReserva() {
   }
 }
 
-// Función auxiliar para mostrar mensajes en la etiqueta <p id="summary">
+// Función auxiliar para mostrar mensajes sencillos
 function mostrarMensaje(texto, tipo) {
   const summary = document.getElementById("summary");
   if (!summary) return;
