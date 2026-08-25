@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Barbería Cordobani — Reservá tu turno</title>
+  <title>NAV Studio Barber — Reservá tu turno</title>
   <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="logo">✂️ Barbería Cordobani</div>
-      <p>Reservá tu turno en menos de un minuto</p>
+      <!-- Acá se llama a tu logo desde la carpeta img -->
+      <img src="img/logo1.png" alt="NAV Studio Barber" class="main-logo" />
+      <p>Distinción y estilo en el corazón de Rosario. Reservá tu turno.</p>
     </header>
+    
     <div class="card">
       <p class="step-label">1. Elegí el servicio</p>
       <div class="options" id="services">
@@ -28,18 +30,27 @@
           <span class="price">$4.000</span>
         </button>
       </div>
+      
       <p class="step-label">2. Elegí el día</p>
       <div class="day-options" id="days"></div>
+      
       <p class="step-label">3. Elegí el horario</p>
       <div class="time-options" id="times"></div>
+      
       <p class="step-label">4. Tus datos</p>
       <div class="field-group">
         <input type="text" id="name" placeholder="Nombre y apellido" />
         <input type="tel" id="phone" placeholder="Tu teléfono" />
         <input type="email" id="mail" placeholder="Mail (para el recordatorio)" />
       </div>
+      
       <button class="confirm" id="confirm">Confirmar turno</button>
       <p class="summary" id="summary"></p>
+
+      <div class="wpp-contact">
+        <p>¿Tenés alguna consulta particular?</p>
+        <a href="https://wa.link/yi96jv" target="_blank" class="wpp-link">Contactanos por WhatsApp</a>
+      </div>
     </div>
   </div>
   <script src="assets/script.js"></script>
