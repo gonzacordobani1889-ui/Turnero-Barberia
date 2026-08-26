@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg: #0c0806; /* Tono oscuro extraído de la sombra de los ladrillos */
-  --surface: rgba(15, 12, 10, 0.85); 
-  --text: #f4f4f5;
+  --bg: #0a0806;
+  --surface: rgba(14, 11, 9, 0.88); 
+  --text: #ffffff;
   --text-muted: #a1a1aa;
   --accent: #d4af37; 
   --accent-dark: #b5952f;
@@ -19,38 +19,37 @@
 body {
   margin: 0;
   background-color: var(--bg);
-  /* Mantiene la foto nítida sin pixelarla, centrada en pantalla */
-  background-image: url('../img/fondo2.jpg');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: contain; 
-  background-attachment: fixed;
+  /* Combinación de las dos imágenes: Poste a la izquierda, Sillón a la derecha */
+  background-image: url('../img/fondo.jpg'), url('../img/fondo2.jpg');
+  background-repeat: no-repeat, no-repeat;
+  background-position: left center, right center;
+  background-size: 50% 100vh, 50% 100vh;
+  background-attachment: fixed, fixed;
   color: var(--text);
   font-family: 'Montserrat', -apple-system, sans-serif;
   line-height: 1.5;
   min-height: 100vh;
 }
 
-/* Oscurecedor sutil para resaltar la tarjeta de turnos sobre el fondo */
+/* Oscurecedor para integrar ambas fotos y destacar el contenido */
 body::before {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(12, 8, 6, 0.65);
-  backdrop-filter: blur(2px);
+  background: radial-gradient(circle, rgba(10,8,6,0.4) 0%, rgba(10,8,6,0.75) 100%);
+  backdrop-filter: blur(1px);
   z-index: -1;
 }
 
 .wrap {
-  max-width: 480px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 24px 14px 40px;
+  padding: 20px 14px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Header solo para el logo */
 header {
   width: 100%;
   text-align: center;
@@ -64,7 +63,7 @@ header {
   max-height: 90px;
   object-fit: contain;
   display: inline-block;
-  filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.9));
+  filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.95));
 }
 
 .card {
@@ -72,10 +71,10 @@ header {
   background: var(--surface);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: var(--radius);
   padding: 24px 18px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.85);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.9);
 }
 
 .step-label {
@@ -87,7 +86,6 @@ header {
   font-weight: 600;
 }
 
-/* Grilla para escritorio y tablets */
 .options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -114,7 +112,7 @@ header {
 }
 
 .opt-btn {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.7);
   border: 1px solid #3f3f46;
   color: var(--text);
   border-radius: 10px;
@@ -133,13 +131,13 @@ header {
 
 .opt-btn:hover:not(:disabled) {
   border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(212, 175, 55, 0.15);
 }
 
 .opt-btn.selected {
   border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.25);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.28);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
 }
 
 .opt-btn:disabled {
@@ -179,7 +177,7 @@ header {
 input[type="text"],
 input[type="tel"],
 input[type="email"] {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   border: 1px solid #3f3f46;
   color: var(--text);
   border-radius: 10px;
@@ -249,8 +247,13 @@ button.confirm:hover {
   padding-bottom: 2px;
 }
 
-/* Disposición cómoda para el dedo en celulares */
+/* Adaptación para pantallas de Celular */
 @media (max-width: 480px) {
+  body {
+    /* En celulares encuadra el poste a la izquierda y el sillón a la derecha */
+    background-size: 50% cover, 50% cover;
+  }
+
   .options {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -260,10 +263,6 @@ button.confirm:hover {
     flex-direction: row;
     justify-content: space-between;
     padding: 14px 16px;
-  }
-
-  .options .price {
-    font-size: 13px;
   }
 
   .time-options {
