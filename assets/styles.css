@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg: #0d0d0d;
-  --surface: rgba(18, 18, 18, 0.88); 
+  --bg: #0c0806; /* Tono oscuro extraído de la sombra de los ladrillos */
+  --surface: rgba(15, 12, 10, 0.85); 
   --text: #f4f4f5;
   --text-muted: #a1a1aa;
   --accent: #d4af37; 
@@ -19,11 +19,11 @@
 body {
   margin: 0;
   background-color: var(--bg);
-  /* Fondo con la imagen del poste reflejada y visible */
+  /* Mantiene la foto nítida sin pixelarla, centrada en pantalla */
   background-image: url('../img/fondo.jpg');
   background-repeat: no-repeat;
-  background-position: left center;
-  background-size: cover;
+  background-position: center top;
+  background-size: contain; 
   background-attachment: fixed;
   color: var(--text);
   font-family: 'Montserrat', -apple-system, sans-serif;
@@ -31,73 +31,51 @@ body {
   min-height: 100vh;
 }
 
-/* Capa oscura translúcida para dejar ver la foto de fondo */
+/* Oscurecedor sutil para resaltar la tarjeta de turnos sobre el fondo */
 body::before {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(90deg, rgba(13,13,13,0.4) 0%, rgba(13,13,13,0.75) 50%, #0d0d0d 100%);
+  background: rgba(12, 8, 6, 0.65);
+  backdrop-filter: blur(2px);
   z-index: -1;
 }
 
 .wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 30px 20px 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-/* Header con formato de tarjeta personal pura */
-header {
-  width: 100%;
   max-width: 480px;
-  background: rgba(18, 18, 18, 0.85);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+  margin: 0 auto;
+  padding: 24px 14px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
-/* El logo ocupa todo el cuerpo de la tarjeta */
-.main-logo {
+/* Header solo para el logo */
+header {
   width: 100%;
-  max-width: 100%;
-  height: auto;
-  max-height: 140px;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.7));
+  text-align: center;
+  margin-bottom: 16px;
 }
 
-header p {
-  color: #e4e4e7;
-  font-size: 12px;
-  margin: 12px 0 0;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-align: center;
+.main-logo {
+  width: auto;
+  max-width: 220px;
+  height: auto;
+  max-height: 90px;
+  object-fit: contain;
+  display: inline-block;
+  filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.9));
 }
 
 .card {
   width: 100%;
-  max-width: 480px;
   background: var(--surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+  padding: 24px 18px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.85);
 }
 
 .step-label {
@@ -109,18 +87,19 @@ header p {
   font-weight: 600;
 }
 
+/* Grilla para escritorio y tablets */
 .options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
 .day-options {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
   padding-bottom: 6px;
   scrollbar-width: none;
 }
@@ -130,16 +109,16 @@ header p {
 .time-options {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
 .opt-btn {
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.65);
   border: 1px solid #3f3f46;
   color: var(--text);
   border-radius: 10px;
-  padding: 12px 6px;
+  padding: 12px 4px;
   font-size: 13px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
@@ -154,13 +133,13 @@ header p {
 
 .opt-btn:hover:not(:disabled) {
   border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.1);
+  background: rgba(212, 175, 55, 0.12);
 }
 
 .opt-btn.selected {
   border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.22);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
 }
 
 .opt-btn:disabled {
@@ -169,15 +148,15 @@ header p {
 }
 
 .opt-btn .price {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
   font-weight: 600;
 }
 
 .day-options .opt-btn {
   flex: 0 0 auto;
-  min-width: 62px;
-  padding: 10px 12px;
+  min-width: 60px;
+  padding: 10px;
 }
 
 .day-options .day-name {
@@ -186,21 +165,21 @@ header p {
 }
 
 .day-options .day-num {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 22px;
 }
 
 input[type="text"],
 input[type="tel"],
 input[type="email"] {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.7);
   border: 1px solid #3f3f46;
   color: var(--text);
   border-radius: 10px;
@@ -213,7 +192,7 @@ input[type="email"] {
 input:focus {
   outline: none;
   border-color: var(--accent);
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.9);
 }
 
 button.confirm {
@@ -248,14 +227,14 @@ button.confirm:hover {
 .summary.ok { color: var(--success); }
 
 .wpp-contact {
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid rgba(255,255,255,0.08);
   text-align: center;
 }
 
 .wpp-contact p {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   margin: 0 0 6px 0;
 }
@@ -270,29 +249,8 @@ button.confirm:hover {
   padding-bottom: 2px;
 }
 
-/* Optimización Celular */
-@media (max-width: 768px) {
-  body {
-    background-position: center top;
-  }
-  
-  body::before {
-    background: linear-gradient(180deg, rgba(13,13,13,0.35) 0%, rgba(13,13,13,0.85) 30%, #0d0d0d 100%);
-  }
-
-  .wrap {
-    align-items: center;
-    padding: 16px 12px 40px;
-  }
-
-  header {
-    margin-top: 40px;
-  }
-
-  .main-logo {
-    max-height: 110px;
-  }
-
+/* Disposición cómoda para el dedo en celulares */
+@media (max-width: 480px) {
   .options {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -301,7 +259,11 @@ button.confirm:hover {
   .options .opt-btn {
     flex-direction: row;
     justify-content: space-between;
-    padding: 14px 18px;
+    padding: 14px 16px;
+  }
+
+  .options .price {
+    font-size: 13px;
   }
 
   .time-options {
