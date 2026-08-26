@@ -1,283 +1,58 @@
-:root {
-  --bg: #0a0a0a;
-  --surface: rgba(22, 22, 22, 0.85); 
-  --text: #ffffff;
-  --text-muted: #a1a1aa;
-  --accent: #d4af37; 
-  --accent-dark: #b5952f;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --radius: 12px;
-}
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAV Studio Barber — Reservá tu turno</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <!-- Acá se llama a tu logo desde la carpeta img -->
+      <img src="img/logo1.png" alt="NAV Studio Barber" class="main-logo" />
+      <p>Distinción y estilo en el corazón de Rosario. Reservá tu turno.</p>
+    </header>
+    
+    <div class="card">
+      <p class="step-label">1. Elegí el servicio</p>
+      <div class="options" id="services">
+        <button class="opt-btn" data-val="Corte" data-price="$12.000">
+          <span>Corte</span>
+          <span class="price">$12.000</span>
+        </button>
+        <button class="opt-btn" data-val="Corte + barba" data-price="$16.000">
+          <span>Corte + barba</span>
+          <span class="price">$16.000</span>
+        </button>
+        <button class="opt-btn" data-val="Barba" data-price="$4.000">
+          <span>Barba</span>
+          <span class="price">$4.000</span>
+        </button>
+      </div>
+      
+      <p class="step-label">2. Elegí el día</p>
+      <div class="day-options" id="days"></div>
+      
+      <p class="step-label">3. Elegí el horario</p>
+      <div class="time-options" id="times"></div>
+      
+      <p class="step-label">4. Tus datos</p>
+      <div class="field-group">
+        <input type="text" id="name" placeholder="Nombre y apellido" />
+        <input type="tel" id="phone" placeholder="Tu teléfono" />
+        <input type="email" id="mail" placeholder="Mail (para el recordatorio)" />
+      </div>
+      
+      <button class="confirm" id="confirm">Confirmar turno</button>
+      <p class="summary" id="summary"></p>
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background-color: var(--bg);
-  background-image: url('../img/fondo.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  color: var(--text);
-  font-family: "Work Sans", -apple-system, sans-serif;
-  line-height: 1.5;
-  position: relative;
-  min-height: 100vh;
-}
-
-body::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.75); /* Apenas más oscuro para asegurar lectura en exteriores */
-  z-index: -1;
-}
-
-.wrap {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 20px 12px 48px; /* Padding lateral más chico para celulares */
-}
-
-header {
-  text-align: center;
-  padding: 12px 0 24px;
-}
-
-.main-logo {
-  max-width: 240px;
-  height: auto;
-  margin-bottom: 8px;
-  filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.5));
-}
-
-header p {
-  color: var(--text);
-  font-size: 15px;
-  margin: 8px 0 0;
-  font-weight: 300;
-  letter-spacing: 0.03em;
-}
-
-.card {
-  background: var(--surface);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-}
-
-.step-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin: 0 0 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-}
-
-/* Grillas por defecto (Escritorio / Tablets) */
-.options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 28px;
-}
-
-.day-options {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  margin-bottom: 28px;
-  padding-bottom: 8px;
-  /* Ocultar barra de scroll en móviles manteniendo la función */
-  scrollbar-width: none; 
-}
-
-.day-options::-webkit-scrollbar {
-  display: none; 
-}
-
-.time-options {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 28px;
-}
-
-/* Diseño de Botones */
-.opt-btn {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #3f3f46;
-  color: var(--text);
-  border-radius: 8px;
-  padding: 14px 6px; /* Más altos para que el dedo toque bien */
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  /* Previene que se haga zoom al tocar rápido en iPhone */
-  touch-action: manipulation; 
-}
-
-.opt-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-}
-
-.opt-btn.selected {
-  border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.15);
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
-}
-
-.opt-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.opt-btn .price {
-  font-size: 13px;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.day-options .opt-btn {
-  flex: 0 0 auto;
-  min-width: 64px; /* Un poco más anchos para los días */
-  padding: 12px 14px;
-}
-
-.day-options .day-name {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.day-options .day-num {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-/* Campos de texto */
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-input[type="text"],
-input[type="tel"],
-input[type="email"] {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #3f3f46;
-  color: var(--text);
-  border-radius: 8px;
-  padding: 14px; /* Más grandes para móviles */
-  font-size: 16px; /* 16px evita que Safari haga zoom automático */
-  transition: border-color 0.2s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: rgba(0, 0, 0, 0.8);
-}
-
-button.confirm {
-  width: 100%;
-  background: var(--text);
-  color: #000000;
-  border: none;
-  padding: 16px; /* Botón bien grande */
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button.confirm:hover {
-  background: var(--accent);
-  color: #000000;
-}
-
-.summary {
-  font-size: 14px;
-  text-align: center;
-  margin: 16px 0 0;
-  min-height: 18px;
-}
-
-.summary.error { color: var(--danger); }
-.summary.ok { color: var(--success); }
-
-/* Enlace WhatsApp */
-.wpp-contact {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  text-align: center;
-}
-
-.wpp-contact p {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin: 0 0 8px 0;
-}
-
-.wpp-link {
-  display: inline-block;
-  color: var(--text);
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 2px;
-  transition: color 0.2s ease;
-}
-
-/* =========================================
-   MEDIA QUERIES - OPTIMIZACIÓN CELULARES
-   ========================================= */
-@media (max-width: 480px) {
-  .main-logo {
-    max-width: 200px; /* Logo más sutil en pantallas chicas */
-  }
-  
-  .card {
-    padding: 20px 16px; /* Bordes internos más finos */
-  }
-
-  /* Los servicios se ponen uno abajo del otro para que no se apriete el texto */
-  .options {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .options .opt-btn {
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 16px 20px;
-    font-size: 15px;
-  }
-
-  .options .price {
-    font-size: 15px;
-  }
-
-  /* Los horarios bajan de 4 a 3 columnas para que los botones sean más anchos */
-  .time-options {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-}
+      <div class="wpp-contact">
+        <p>¿Tenés alguna consulta particular?</p>
+        <a href="https://wa.link/yi96jv" target="_blank" class="wpp-link">Contactanos por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <script src="assets/script.js"></script>
+</body>
+</html>
