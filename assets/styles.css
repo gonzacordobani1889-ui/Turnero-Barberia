@@ -20,7 +20,7 @@ body {
   margin: 0;
   background-color: var(--bg);
   /* Mantiene la foto nítida sin pixelarla, centrada en pantalla */
-  background-image: url('../img/fondo.jpg');
+  background-image: url('../img/fondo2.jpg');
   background-repeat: no-repeat;
   background-position: center top;
   background-size: contain; 
