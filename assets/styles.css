@@ -323,3 +323,54 @@ button.confirm:hover {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* Contenedor del selector de días con soporte para flechas de desplazamiento */
+.day-options-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.day-options {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  width: 100%;
+  padding-bottom: 6px;
+  scrollbar-width: none; /* Oculta barra en Firefox */
+}
+
+.day-options::-webkit-scrollbar {
+  display: none; /* Oculta barra en Chrome/Safari */
+}
+
+/* Flechas laterales para mover los días en desktop o pantallas grandes */
+.scroll-arrow {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #3f3f46;
+  color: var(--accent);
+  border-radius: 8px;
+  width: 32px;
+  height: 48px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.scroll-arrow:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  /* En celulares ocultamos las flechas porque el dedo scrollea fluido deslizando */
+  .scroll-arrow {
+    display: none;
+  }
+}
