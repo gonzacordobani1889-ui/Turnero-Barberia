@@ -235,5 +235,23 @@ function mostrarMensaje(texto, tipo) {
   const summary = document.getElementById("summary");
   if (!summary) return;
   summary.className = `summary ${tipo}`;
+  // Control de desplazamiento por flechas para los días
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("days");
+  const btnLeft = document.getElementById("scroll-left");
+  const btnRight = document.getElementById("scroll-right");
+
+  if (btnLeft && container) {
+    btnLeft.addEventListener("click", () => {
+      container.scrollBy({ left: -120, behavior: 'smooth' });
+    });
+  }
+
+  if (btnRight && container) {
+    btnRight.addEventListener("click", () => {
+      container.scrollBy({ left: 120, behavior: 'smooth' });
+    });
+  }
+});
   summary.textContent = texto;
 }
