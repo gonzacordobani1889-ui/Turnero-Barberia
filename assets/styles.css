@@ -19,25 +19,25 @@
 body {
   margin: 0;
   background-color: var(--bg);
-  /* Combinación de las dos imágenes: Poste a la izquierda, Sillón a la derecha */
-  background-image: url('../img/fondo.jpg'), url('../img/fondo2.jpg');
-  background-repeat: no-repeat, no-repeat;
-  background-position: left center, right center;
-  background-size: 50% 100vh, 50% 100vh;
-  background-attachment: fixed, fixed;
+  /* Dejamos solo la textura o el color de fondo, quitamos el fixed */
+  background-image: url('../img/fondo.jpg');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
   color: var(--text);
   font-family: 'Montserrat', -apple-system, sans-serif;
   line-height: 1.5;
   min-height: 100vh;
+  /* FORZAMOS LA ACELERACIÓN POR HARDWARE GLOBAL */
+  -webkit-transform: translateZ(0);
 }
 
-/* Oscurecedor para integrar ambas fotos y destacar el contenido */
 body::before {
   content: "";
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle, rgba(10,8,6,0.4) 0%, rgba(10,8,6,0.75) 100%);
-  backdrop-filter: blur(1px);
+  /* Solo gradiente oscuro, CERO BLUR */
+  background: radial-gradient(circle, rgba(10,8,6,0.5) 0%, rgba(10,8,6,0.9) 100%);
   z-index: -1;
 }
 
