@@ -72,16 +72,20 @@ function cargarDias(cantidad = 7) {
   }
 }
 
-// 2. SELECCIONAR DÍA Y CONSULTAR OCUPADOS (Petición GET al flujo inferior de n8n)
+// 2. SELECCIONAR DÍA Y CONSULTAR OCUPADOS (VERSIÓN SIN LAG)
 async function seleccionarDia(fechaIso, btnElemento) {
+  // 1. LÓGICA DE UI INSTANTÁNEA (Antes del fetch)
   state.dia = fechaIso;
   state.hora = null;
 
+  // Remueve la selección anterior y selecciona el nuevo botón al instante
   document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("selected"));
   btnElemento.classList.add("selected");
 
+  // Limpia los horarios viejos y muestra el estado de carga enseguida
   renderizarHorarios([], true);
 
+  // 2. PETICIÓN EN SEGUNDO PLANO
   try {
     const response = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(fechaIso)}`, {
       method: "GET",
@@ -91,10 +95,12 @@ async function seleccionarDia(fechaIso, btnElemento) {
     const data = await response.json();
     const ocupados = Array.isArray(data.ocupados) ? data.ocupados : [];
     
+    // Una vez que llegan los datos, actualiza los botones
     renderizarHorarios(ocupados, false);
   } catch (err) {
     console.error("Error al consultar disponibilidad:", err);
-    renderizarHorarios([], false);
+    // Si falla, muestra todo libre para que el error no trabe al usuario (n8n lo rebotará luego si está mal)
+    renderizarHorarios([], false); 
   }
 }
 
