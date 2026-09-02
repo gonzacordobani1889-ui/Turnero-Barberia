@@ -12,11 +12,11 @@ const state = {
   mail: ""
 };
 
-// Servicios y precios sincronizados con n8n
 const SERVICIOS = {
   "Corte": "$12.000",
   "Corte + barba": "$16.000",
-  "Barba": "$4.000"
+  "Barba": "$4.000",
+  "Mechitas": "$50.000"
 };
 
 // Horarios válidos
