@@ -9,39 +9,11 @@
 <body>
   <div class="wrap">
     <header>
-      <!-- Acá se llama a tu logo desde la carpeta img -->
       <img src="img/logo.png" alt="MAV Barber Studio" class="main-logo" />
       <p>Distinción y estilo en el corazón de Rosario. Reservá tu turno.</p>
     </header>
 
-    <!-- SECCIÓN: SOBRE EL BARBERO (Generador de confianza) -->
-    <div class="card info-card">
-      <h3 class="section-title">El artista detrás del sillón</h3>
-      <p class="bio-text">
-        <strong>Mauritto</strong> no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, su objetivo es que salgas del estudio con la mejor versión de vos mismo. En MAV Barber Studio no venís a cortarte el pelo, venís a vivir una experiencia de primer nivel.
-      </p>
-    </div>
-
-    <!-- SECCIÓN: SERVICIOS DETALLADOS (Marketing y Upselling) -->
-    <div class="card info-card">
-      <h3 class="section-title">Nuestros Servicios</h3>
-      <ul class="service-list">
-        <li>
-          <strong>Corte Clásico / Fade:</strong> Diseño a medida según tus facciones y tipo de rostro. 
-        </li>
-        <li>
-          <strong>Corte + Barba:</strong> El ritual completo. Perfilado simétrico.
-        </li>
-        <li>
-          <strong>Solo Barba:</strong> Mantenimiento, simetría y contornos perfectos para destacar tu mandíbula.
-        </li>
-        <li>
-          <strong>Mechitas / Color:</strong> Iluminación y estilo para destacar. Técnicas modernas cuidando la salud de tu pelo.
-        </li>
-      </ul>
-    </div>
-    
-    <!-- SECCIÓN: SISTEMA DE RESERVAS -->
+    <!-- 1. EL TURNERO VA PRIMERO (Conversión directa) -->
     <div class="card">
       <p class="step-label">1. Elegí el servicio</p>
       <div class="options" id="services">
@@ -55,17 +27,21 @@
         </button>
         <button class="opt-btn" data-val="Barba" data-price="$4.000">
           <span>Barba</span>
-          <span class="price">$5.000</span>
+          <span class="price">$4.000</span>
         </button>
-        <!-- NUEVO BOTÓN DE MECHITAS -->
         <button class="opt-btn" data-val="Mechitas" data-price="$20.000">
           <span>Mechitas</span>
-          <span class="price">$50.000</span>
+          <span class="price">$20.000</span>
         </button>
       </div>
       
       <p class="step-label">2. Elegí el día</p>
-      <div class="day-options" id="days"></div>
+      <!-- Selector de días mejorado con flechas / mes scrolleable -->
+      <div class="day-options-container">
+        <button type="button" class="scroll-arrow" id="scroll-left">&#10094;</button>
+        <div class="day-options" id="days"></div>
+        <button type="button" class="scroll-arrow" id="scroll-right">&#10095;</button>
+      </div>
       
       <p class="step-label">3. Elegí el horario</p>
       <div class="time-options" id="times"></div>
@@ -85,6 +61,33 @@
         <a href="https://wa.link/yi96jv" target="_blank" class="wpp-link">Contactanos por WhatsApp</a>
       </div>
     </div>
+
+    <!-- 2. SECCIONES INFORMATIVAS ABAJO (Estilo Landing Page) -->
+    <div class="card info-card" style="margin-top: 24px;">
+      <h3 class="section-title">El artista detrás del sillón</h3>
+      <p class="bio-text">
+        <strong>Mauritto</strong> no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, su objetivo es que salgas del estudio con la mejor versión de vos mismo. En MAV Barber Studio no venís a cortarte el pelo, venís a vivir una experiencia de primer nivel.
+      </p>
+    </div>
+
+    <div class="card info-card">
+      <h3 class="section-title">Nuestros Servicios</h3>
+      <ul class="service-list">
+        <li>
+          <strong>Corte Clásico / Fade:</strong> Diseño a medida según tus facciones y tipo de rostro. Terminaciones a navaja y productos premium.
+        </li>
+        <li>
+          <strong>Corte + Barba:</strong> El ritual completo. Perfilado simétrico, toallas calientes y aceites esenciales para cuidar tu piel.
+        </li>
+        <li>
+          <strong>Solo Barba:</strong> Mantenimiento, simetría y contornos perfectos para destacar tu mandíbula.
+        </li>
+        <li>
+          <strong>Mechitas / Color:</strong> Iluminación y estilo para destacar. Técnicas modernas cuidando la salud de tu pelo.
+        </li>
+      </ul>
+    </div>
+
   </div>
   <script src="assets/script.js"></script>
 </body>
