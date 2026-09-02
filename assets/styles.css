@@ -125,10 +125,64 @@ header {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
+  /* ELIMINAMOS EL LAG ACÁ: transición más rápida */
+  transition: transform 0.1s ease, border-color 0.1s ease, background 0.1s ease;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul feo en Android */
 }
 
+/* Efecto de hundimiento rápido al hacer tap */
+.opt-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(212, 175, 55, 0.15);
+}
+
+/* Estilos para las nuevas tarjetas de información */
+.info-card {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.section-title {
+  color: var(--accent);
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bio-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.service-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-list li {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 8px;
+}
+
+.service-list li strong {
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
 .opt-btn:hover:not(:disabled) {
   border-color: var(--accent);
   background: rgba(212, 175, 55, 0.15);
