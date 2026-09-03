@@ -114,17 +114,50 @@ button.time-btn {
     padding: 12px 5px !important;
 }
 /* =========================================
-   PARCHE PARA BOTONES DEL FOOTER (Atrás / Siguiente / Confirmar)
+   BOTONES DEL FOOTER UNIFICADOS Y SIMÉTRICOS
    ========================================= */
+.wizard-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Asegura que la línea base sea la misma */
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    gap: 15px; /* Evita que se peguen si la pantalla es muy chica */
+}
+
+/* Medidas y alineación idéntica para los 3 botones */
 button.btn-back, 
 button.btn-next, 
 button.confirm {
-    height: auto !important;
-    line-height: normal !important;
-    min-width: 0 !important; /* Matamos el ancho gigante de Hyperspace */
-    border-radius: 8px !important; /* Bordes prolijos */
+    height: 55px !important; /* Altura inamovible para que ninguno quede más chico */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 30px !important;
+    border-radius: 8px !important;
+    font-size: 0.9em !important;
+    font-weight: bold !important;
+    line-height: 1 !important;
+    min-width: unset !important; /* Matamos el ancho exagerado de la plantilla original */
+    letter-spacing: 0.1em !important;
+    white-space: nowrap !important;
+    transition: all 0.3s ease !important;
 }
 
-button.btn-back, button.btn-next {
-    padding: 10px 15px !important;
+/* Look específico para el botón de Atrás */
+button.btn-back {
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    color: #fff !important;
+}
+button.btn-back:hover {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: #fff !important;
+}
+
+/* Blindamos el botón Confirmar para que mantenga su forma al cambiar a verde */
+button.confirm {
+    border: none !important;
 }
