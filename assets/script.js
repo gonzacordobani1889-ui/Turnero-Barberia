@@ -126,28 +126,62 @@ function actualizarResumen() {
     document.getElementById('sum-price').innerText = reserva.precio;
 }
 
-// Botón de Confirmar (Acá más adelante enganchamos WhatsApp o n8n)
+// Botón de Confirmar (CONECTADO A N8N - CORREGIDO)
 document.getElementById('confirm').addEventListener('click', function() {
     const nombre = document.getElementById('name').value;
     const telefono = document.getElementById('phone').value;
-    const email = document.getElementById('email').value; // Capturamos el mail
+    const email = document.getElementById('email').value;
     
-    // Ahora exigimos los tres datos
     if(nombre === '' || telefono === '' || email === '') {
         alert('Por favor, completá todos tus datos para confirmar tu turno.');
         return;
     }
     
+    const boton = this;
     const msjFinal = document.getElementById('summary');
     msjFinal.style.color = "var(--accent-mav)";
-    msjFinal.innerText = "Procesando reserva...";
+    msjFinal.innerText = "Enviando reserva al sistema...";
+    boton.disabled = true;
     
-    // Simulamos que carga y da éxito
-    setTimeout(() => {
-        msjFinal.style.color = "#4CAF50"; // Verde de éxito
-        msjFinal.innerText = "¡Turno confirmado, " + nombre + "! Te esperamos.";
-        this.disabled = true;
-        this.innerText = "Reserva Exitosa";
-        this.style.background = "#4CAF50";
-    }, 1500);
+    // Pegá acá tu URL (Fijate el detalle de test vs producción abajo)
+    const webhookUrl = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno'; 
+
+    // 1. AHORA LOS NOMBRES COINCIDEN EXACTAMENTE CON LOS DE N8N
+    const datosTurno = {
+        nombre: nombre,
+        telefono: telefono,
+        mail: email,
+        servicio: reserva.servicio,
+        precio: reserva.precio,
+        dia: reserva.fecha,
+        hora: reserva.hora
+    };
+
+    // 2. Hacemos el disparo
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosTurno)
+    })
+    .then(response => response.json()) // Transformamos la respuesta de n8n a código
+    .then(data => {
+        // 3. LEEMOS EL "ok" QUE DEVUELVE N8N EN SU RESPUESTA
+        if(data.ok === true) {
+            msjFinal.style.color = "#4CAF50"; 
+            msjFinal.innerText = "¡Turno confirmado, " + nombre + "! Te esperamos.";
+            boton.innerText = "Reserva Exitosa";
+            boton.style.background = "#4CAF50";
+        } else {
+            // Si n8n lo rechaza (ej. "Demasiados intentos" o "Ese horario ya fue reservado")
+            msjFinal.style.color = "var(--danger-mav)";
+            msjFinal.innerText = data.mensaje; // Muestra el mensaje real que armaste en n8n
+            boton.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error al conectar con n8n:', error);
+        msjFinal.style.color = "var(--danger-mav)";
+        msjFinal.innerText = "Hubo un error al procesar el turno. Intentá de nuevo.";
+        boton.disabled = false; 
+    });
 });
