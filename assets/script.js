@@ -1,223 +1,150 @@
-// ==========================================
-// CONFIGURACIÓN (REEMPLAZA CON TU WEBHOOK DE N8N)
-// ==========================================
-const WEBHOOK_URL = "https://tu-url-de-n8n.com/webhook/turnos"; 
+// Variable para ir guardando lo que elige el cliente
+let reserva = {
+    servicio: '',
+    precio: '',
+    barbero: '',
+    fecha: '',
+    hora: ''
+};
 
-const state = { servicio: null, precio: null, duracion: null, barbero: null, diaIso: null, fechaDisplay: null, hora: null };
-const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-let mesActual = new Date().getMonth();
-let anioActual = new Date().getFullYear();
-
-// ==========================================
-// 1. NAVEGACIÓN DEL WIZARD
-// ==========================================
-function goToStep(step) {
-  document.querySelectorAll('.wizard-step').forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
-  document.getElementById(`step-${step}`).classList.remove('hidden');
-  document.getElementById(`step-${step}`).classList.add('active');
-  
-  if(step === 3) generarCalendario(mesActual, anioActual);
-  if(step === 4) actualizarResumen();
-}
-
-// Eventos de selección de servicio (Paso 1)
-document.querySelectorAll('.opt-list-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.opt-list-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    
-    state.servicio = btn.querySelector('.srv-name').textContent;
-    state.precio = btn.dataset.price;
-    state.duracion = btn.dataset.duration; 
-    
-    setTimeout(() => goToStep(2), 200);
-  });
-});
-
-// Eventos de selección de barbero (Paso 2)
-document.querySelectorAll('.agent-card').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.agent-card').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    state.barbero = btn.dataset.val;
-    setTimeout(() => goToStep(3), 200);
-  });
-});
-
-// ==========================================
-// 2. LÓGICA DEL CALENDARIO (GRILLA)
-// ==========================================
-document.getElementById('prev-month').addEventListener('click', () => { mesActual--; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
-document.getElementById('next-month').addEventListener('click', () => { mesActual++; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
-
-function siPasaDeAnio() {
-  if (mesActual < 0) { mesActual = 11; anioActual--; }
-  else if (mesActual > 11) { mesActual = 0; anioActual++; }
-}
-
-function generarCalendario(mes, anio) {
-  const grid = document.getElementById("calendar-grid");
-  const headers = grid.innerHTML.match(/<div class="day-name">.*?<\/div>/g).join('');
-  grid.innerHTML = headers;
-  
-  document.getElementById("current-month-display").textContent = `${MESES[mes]} ${anio}`;
-  
-  const primerDia = new Date(anio, mes, 1).getDay();
-  const diasEnMes = new Date(anio, mes + 1, 0).getDate();
-  const hoyMidnight = new Date(); hoyMidnight.setHours(0,0,0,0);
-
-  for (let i = 0; i < primerDia; i++) grid.appendChild(document.createElement("div"));
-
-  for (let i = 1; i <= diasEnMes; i++) {
-    const fecha = new Date(anio, mes, i);
-    const div = document.createElement("div");
-    div.className = "cal-day";
-    div.textContent = i;
-    
-    const isoDate = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-    const displayStr = `${i} de ${MESES[mes]}`;
-
-    // Filtra días pasados y domingos (si cierran domingos)
-    if (fecha < hoyMidnight || fecha.getDay() === 0) {
-      div.classList.add("disabled");
-    } else {
-      div.addEventListener("click", () => {
-        document.querySelectorAll(".cal-day").forEach(d => d.classList.remove("selected"));
-        div.classList.add("selected");
-        
-        state.diaIso = isoDate; 
-        state.fechaDisplay = displayStr; 
-        state.hora = null;
-        
-        document.getElementById("btn-next-step3").disabled = true;
-        document.getElementById("selected-date-display").textContent = displayStr;
-        document.getElementById("time-selection-container").classList.remove("hidden");
-        
-        cargarHorariosReales(isoDate);
-      });
-    }
-    grid.appendChild(div);
-  }
-}
-
-// ==========================================
-// 3. CONSULTA Y RENDERIZADO DE HORARIOS 
-// ==========================================
-async function cargarHorariosReales(isoDate) {
-  const loader = document.getElementById("loading-times");
-  const timesContainer = document.getElementById("times-container");
-  const mContainer = document.getElementById("times-morning");
-  const aContainer = document.getElementById("times-afternoon");
-  const eContainer = document.getElementById("times-evening");
-
-  // Mostrar estado de carga y limpiar grillas viejas
-  loader.classList.remove("hidden");
-  timesContainer.classList.add("hidden");
-  mContainer.innerHTML = ""; 
-  aContainer.innerHTML = ""; 
-  eContainer.innerHTML = "";
-
-  const horariosBase = ["09:00", "09:40", "10:20", "11:00", "11:40", "12:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20", "19:00", "19:40"];
-  let ocupados = [];
-
-  try {
-    // Consulta a n8n enviando Día y Barbero
-    const urlConsulta = `${WEBHOOK_URL}?dia=${encodeURIComponent(isoDate)}&barbero=${encodeURIComponent(state.barbero)}`;
-    const res = await fetch(urlConsulta, {
-      method: "GET",
-      headers: { "Accept": "application/json" }
+// Función maestra para cambiar de paso
+function goToStep(numeroPaso) {
+    // Escondemos todos los pasos
+    document.querySelectorAll('.wizard-step').forEach(paso => {
+        paso.classList.remove('active');
+        paso.classList.add('hidden');
     });
     
-    if(res.ok) {
-        const data = await res.json();
-        if(Array.isArray(data.ocupados)) ocupados = data.ocupados;
+    // Mostramos solo el paso que necesitamos
+    const pasoActual = document.getElementById('step-' + numeroPaso);
+    pasoActual.classList.remove('hidden');
+    pasoActual.classList.add('active');
+
+    // Si llegamos al último paso, actualizamos la cajita de resumen
+    if (numeroPaso === 4) {
+        actualizarResumen();
     }
-  } catch(e) {
-    console.error("Error cargando horarios de n8n:", e);
-  }
-
-  // Lógica estricta de tiempo para hoy
-  const ahora = new Date();
-  const stringHoy = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
-  const esHoy = (isoDate === stringHoy);
-  const horaActualDecimal = ahora.getHours() + (ahora.getMinutes() / 60);
-
-  horariosBase.forEach(h => {
-    const btn = document.createElement("button");
-    btn.className = "time-btn"; 
-    btn.textContent = h;
-    
-    let yaPaso = false;
-    if (esHoy) {
-      const [hStr, mStr] = h.split(":");
-      const horaBtnDecimal = parseInt(hStr) + (parseInt(mStr) / 60);
-      if (horaBtnDecimal <= horaActualDecimal) {
-        yaPaso = true;
-      }
-    }
-
-    // Se deshabilita si n8n dice que está ocupado o si ya pasó la hora
-    if(ocupados.includes(h) || yaPaso) {
-      btn.disabled = true;
-    } else {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        state.hora = h;
-        document.getElementById("btn-next-step3").disabled = false; 
-      });
-    }
-
-    // Distribución por bloques horarios
-    const horaNum = parseInt(h.split(":")[0]);
-    if (horaNum < 12) mContainer.appendChild(btn);
-    else if (horaNum < 18) aContainer.appendChild(btn);
-    else eContainer.appendChild(btn);
-  });
-
-  // Ocultar carga y mostrar botones
-  loader.classList.add("hidden");
-  timesContainer.classList.remove("hidden");
 }
 
-// ==========================================
-// 4. RESUMEN Y ENVÍO DEL FORMULARIO
-// ==========================================
+// PASO 1: Elegir Servicio
+document.querySelectorAll('.opt-list-btn').forEach(boton => {
+    boton.addEventListener('click', function() {
+        // Despintar los otros botones y pintar este
+        document.querySelectorAll('.opt-list-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        // Guardar la data
+        reserva.servicio = this.getAttribute('data-val');
+        reserva.precio = this.getAttribute('data-price');
+        
+        // Avanzar al Paso 2 automáticamente con un micro-retraso para que se vea el clic
+        setTimeout(() => goToStep(2), 350);
+    });
+});
+
+// PASO 2: Elegir Barbero
+document.querySelectorAll('.agent-card').forEach(tarjeta => {
+    tarjeta.addEventListener('click', function() {
+        // Despintar y pintar
+        document.querySelectorAll('.agent-card').forEach(t => t.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        // Guardar la data
+        reserva.barbero = this.getAttribute('data-val');
+        
+        // Avanzar al Paso 3 automáticamente
+        setTimeout(() => goToStep(3), 350);
+    });
+});
+
+// PASO 3: Calendario y Horarios (Simulación para que funcione la interfaz)
+const grillaCalendario = document.getElementById('calendar-grid');
+
+// Generamos 30 días visuales para que el cliente pueda clickear
+for(let i = 1; i <= 30; i++) {
+    let diaDiv = document.createElement('div');
+    diaDiv.classList.add('cal-day');
+    diaDiv.innerText = i;
+    
+    // Deshabilitamos los primeros días para simular que ya pasaron
+    if(i < 5) {
+        diaDiv.classList.add('disabled');
+    } else {
+        diaDiv.addEventListener('click', function() {
+            document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
+            this.classList.add('selected');
+            reserva.fecha = i + ' de Septiembre'; // Mes estático por ahora
+            
+            // Mostrar los horarios
+            document.getElementById('time-selection-container').classList.remove('hidden');
+            document.getElementById('selected-date-display').innerText = reserva.fecha;
+            
+            chequearPaso3();
+        });
+    }
+    grillaCalendario.appendChild(diaDiv);
+}
+
+// Configurar clics de los botones de horarios (que están en el HTML)
+function configurarHorarios(contenedorId, horarios) {
+    const contenedor = document.getElementById(contenedorId);
+    horarios.forEach(hora => {
+        let btn = document.createElement('button');
+        btn.classList.add('time-btn');
+        btn.innerText = hora;
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            reserva.hora = hora;
+            chequearPaso3();
+        });
+        contenedor.appendChild(btn);
+    });
+}
+
+// Inyectamos horarios de prueba
+configurarHorarios('times-morning', ['10:00', '10:30', '11:00']);
+configurarHorarios('times-afternoon', ['16:00', '16:30', '17:00']);
+configurarHorarios('times-evening', ['18:00', '19:00', '19:30']);
+
+// Habilitar botón "Siguiente" solo si eligió Día Y Hora
+function chequearPaso3() {
+    const btnSiguiente = document.getElementById('btn-next-step3');
+    if (reserva.fecha !== '' && reserva.hora !== '') {
+        btnSiguiente.disabled = false;
+    } else {
+        btnSiguiente.disabled = true;
+    }
+}
+
+// PASO 4: Resumen Final
 function actualizarResumen() {
-  document.getElementById("sum-service").textContent = `${state.servicio} (${state.duracion})`;
-  document.getElementById("sum-date").textContent = `📅 ${state.fechaDisplay} - ${state.hora} hs`;
-  document.getElementById("sum-barber").textContent = `💈 Profesional: ${state.barbero}`;
-  document.getElementById("sum-price").textContent = `Total: ${state.precio}`;
+    document.getElementById('sum-service').innerText = reserva.servicio;
+    document.getElementById('sum-date').innerText = reserva.fecha + ' a las ' + reserva.hora + ' hs';
+    document.getElementById('sum-barber').innerText = 'Con: ' + reserva.barbero;
+    document.getElementById('sum-price').innerText = reserva.precio;
 }
 
-document.getElementById("confirm").addEventListener("click", async () => {
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  
-  if(!name || !phone) return alert("Por favor, completá tu Nombre y Teléfono");
-  
-  const payload = { ...state, nombre: name, telefono: phone };
-  const msgEl = document.getElementById("summary");
-  
-  msgEl.textContent = "Procesando..."; 
-  msgEl.style.color = "#fff";
-  
-  try {
-    const res = await fetch(WEBHOOK_URL, { 
-      method: "POST", 
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload) 
-    });
+// Botón de Confirmar (Acá más adelante enganchamos WhatsApp o n8n)
+document.getElementById('confirm').addEventListener('click', function() {
+    const nombre = document.getElementById('name').value;
+    const telefono = document.getElementById('phone').value;
     
-    if(res.ok) {
-      msgEl.textContent = "¡Turno confirmado con éxito!";
-      msgEl.style.color = "#4ade80";
-      document.querySelector(".field-group").style.display = "none";
-    } else {
-      throw new Error("Respuesta no válida del servidor");
+    if(nombre === '' || telefono === '') {
+        alert('Por favor, completá tu nombre y WhatsApp para confirmar.');
+        return;
     }
-  } catch(e) {
-    msgEl.textContent = "Error de conexión. Intentá de nuevo.";
-    msgEl.style.color = "var(--danger)";
-  }
+    
+    const msjFinal = document.getElementById('summary');
+    msjFinal.style.color = "var(--accent-mav)";
+    msjFinal.innerText = "Procesando reserva...";
+    
+    // Simulamos que carga y da éxito
+    setTimeout(() => {
+        msjFinal.style.color = "#4CAF50"; // Verde de éxito
+        msjFinal.innerText = "¡Turno confirmado, " + nombre + "! Te esperamos.";
+        this.disabled = true;
+        this.innerText = "Reserva Exitosa";
+        this.style.background = "#4CAF50";
+    }, 1500);
 });
