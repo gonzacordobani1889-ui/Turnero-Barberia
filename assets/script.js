@@ -1,3 +1,4 @@
+console.log("¡El motor del turnero está conectado y funcionando, Gonza!");
 // Variable para ir guardando lo que elige el cliente
 let reserva = {
     servicio: '',
