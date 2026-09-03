@@ -88,3 +88,28 @@ h1.major:after, #sidebar nav a:after {
 .confirm { background: var(--danger-mav); border: none; color: #fff; font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 15px 30px; border-radius: 6px; transition: 0.2s;}
 .confirm:hover { background: #b02a2a; }
 .summary-msg { text-align: center; margin-top: 20px; font-weight: bold; }
+/* =========================================
+   PARCHE PARA BOTONES DEL TURNERO
+   (Anula el CSS estricto de Hyperspace)
+   ========================================= */
+button.opt-list-btn, 
+button.agent-card, 
+button.time-btn {
+    height: auto !important;
+    line-height: normal !important;
+    white-space: normal !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+}
+
+button.opt-list-btn {
+    padding: 20px !important;
+}
+
+button.agent-card {
+    padding: 25px 15px !important;
+}
+
+button.time-btn {
+    padding: 12px 5px !important;
+}
