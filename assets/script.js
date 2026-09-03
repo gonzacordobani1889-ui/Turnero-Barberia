@@ -8,6 +8,9 @@ const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "
 let mesActual = new Date().getMonth();
 let anioActual = new Date().getFullYear();
 
+// ==========================================
+// 1. NAVEGACIÓN DEL WIZARD
+// ==========================================
 function goToStep(step) {
   document.querySelectorAll('.wizard-step').forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
   document.getElementById(`step-${step}`).classList.remove('hidden');
@@ -17,6 +20,7 @@ function goToStep(step) {
   if(step === 4) actualizarResumen();
 }
 
+// Eventos de selección de servicio (Paso 1)
 document.querySelectorAll('.opt-list-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.opt-list-btn').forEach(b => b.classList.remove('selected'));
@@ -24,13 +28,13 @@ document.querySelectorAll('.opt-list-btn').forEach(btn => {
     
     state.servicio = btn.querySelector('.srv-name').textContent;
     state.precio = btn.dataset.price;
-    // 🐛 BUG 1 CORREGIDO: Capturamos duración
     state.duracion = btn.dataset.duration; 
     
     setTimeout(() => goToStep(2), 200);
   });
 });
 
+// Eventos de selección de barbero (Paso 2)
 document.querySelectorAll('.agent-card').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.agent-card').forEach(b => b.classList.remove('selected'));
@@ -40,7 +44,9 @@ document.querySelectorAll('.agent-card').forEach(btn => {
   });
 });
 
-// Lógica de Calendario
+// ==========================================
+// 2. LÓGICA DEL CALENDARIO (GRILLA)
+// ==========================================
 document.getElementById('prev-month').addEventListener('click', () => { mesActual--; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
 document.getElementById('next-month').addEventListener('click', () => { mesActual++; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
 
@@ -71,6 +77,7 @@ function generarCalendario(mes, anio) {
     const isoDate = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
     const displayStr = `${i} de ${MESES[mes]}`;
 
+    // Filtra días pasados y domingos (si cierran domingos)
     if (fecha < hoyMidnight || fecha.getDay() === 0) {
       div.classList.add("disabled");
     } else {
@@ -86,7 +93,6 @@ function generarCalendario(mes, anio) {
         document.getElementById("selected-date-display").textContent = displayStr;
         document.getElementById("time-selection-container").classList.remove("hidden");
         
-        // 🐛 BUG 3 y 4 CORREGIDOS: Llamamos a la función asíncrona real
         cargarHorariosReales(isoDate);
       });
     }
@@ -94,7 +100,9 @@ function generarCalendario(mes, anio) {
   }
 }
 
-// 🐛 BUGS CORREGIDOS: Filtro de horas pasadas (hoy) y parámetro multibarbero
+// ==========================================
+// 3. CONSULTA Y RENDERIZADO DE HORARIOS 
+// ==========================================
 async function cargarHorariosReales(isoDate) {
   const loader = document.getElementById("loading-times");
   const timesContainer = document.getElementById("times-container");
@@ -102,17 +110,19 @@ async function cargarHorariosReales(isoDate) {
   const aContainer = document.getElementById("times-afternoon");
   const eContainer = document.getElementById("times-evening");
 
+  // Mostrar estado de carga y limpiar grillas viejas
   loader.classList.remove("hidden");
   timesContainer.classList.add("hidden");
-  mContainer.innerHTML = ""; aContainer.innerHTML = ""; eContainer.innerHTML = "";
+  mContainer.innerHTML = ""; 
+  aContainer.innerHTML = ""; 
+  eContainer.innerHTML = "";
 
   const horariosBase = ["09:00", "09:40", "10:20", "11:00", "11:40", "12:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20", "19:00", "19:40"];
   let ocupados = [];
 
   try {
-    // Agregamos el parámetro del barbero para que n8n filtre correctamente la agenda
+    // Consulta a n8n enviando Día y Barbero
     const urlConsulta = `${WEBHOOK_URL}?dia=${encodeURIComponent(isoDate)}&barbero=${encodeURIComponent(state.barbero)}`;
-    
     const res = await fetch(urlConsulta, {
       method: "GET",
       headers: { "Accept": "application/json" }
@@ -126,11 +136,10 @@ async function cargarHorariosReales(isoDate) {
     console.error("Error cargando horarios de n8n:", e);
   }
 
-  // Lógica para saber si el día seleccionado es HOY y qué hora es ahora
+  // Lógica estricta de tiempo para hoy
   const ahora = new Date();
   const stringHoy = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
   const esHoy = (isoDate === stringHoy);
-  // Convertimos la hora actual a un formato decimal fácil de comparar (ej. 14:30 = 14.5)
   const horaActualDecimal = ahora.getHours() + (ahora.getMinutes() / 60);
 
   horariosBase.forEach(h => {
@@ -138,7 +147,6 @@ async function cargarHorariosReales(isoDate) {
     btn.className = "time-btn"; 
     btn.textContent = h;
     
-    // Verificamos si la hora del botón ya pasó en el día de hoy
     let yaPaso = false;
     if (esHoy) {
       const [hStr, mStr] = h.split(":");
@@ -148,7 +156,7 @@ async function cargarHorariosReales(isoDate) {
       }
     }
 
-    // El botón se deshabilita si n8n dice que está ocupado, o si la hora ya pasó
+    // Se deshabilita si n8n dice que está ocupado o si ya pasó la hora
     if(ocupados.includes(h) || yaPaso) {
       btn.disabled = true;
     } else {
@@ -160,68 +168,22 @@ async function cargarHorariosReales(isoDate) {
       });
     }
 
+    // Distribución por bloques horarios
     const horaNum = parseInt(h.split(":")[0]);
     if (horaNum < 12) mContainer.appendChild(btn);
     else if (horaNum < 18) aContainer.appendChild(btn);
     else eContainer.appendChild(btn);
   });
 
+  // Ocultar carga y mostrar botones
   loader.classList.add("hidden");
   timesContainer.classList.remove("hidden");
 }
 
-  // Horarios de trabajo base de la barbería
-  const horariosBase = ["09:00", "09:40", "10:20", "11:00", "11:40", "12:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20", "19:00", "19:40"];
-  let ocupados = [];
-
-  try {
-    // Consulta GET a n8n (asegurate que tu webhook GET devuelva un JSON: { "ocupados": ["09:00", "11:00"] })
-    const res = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(isoDate)}`, {
-      method: "GET",
-      headers: { "Accept": "application/json" }
-    });
-    
-    if(res.ok) {
-        const data = await res.json();
-        if(Array.isArray(data.ocupados)) ocupados = data.ocupados;
-    }
-  } catch(e) {
-    console.error("Error cargando horarios de n8n:", e);
-    // Si la API falla, el código sigue y asume todo libre (es preferible rebotar en la confirmación que dejar colgada la app)
-  }
-
-  // Renderizar y deshabilitar horarios ocupados
-  horariosBase.forEach(h => {
-    const btn = document.createElement("button");
-    btn.className = "time-btn"; 
-    btn.textContent = h;
-    
-    // Validar contra lo que trajo el Sheets vía n8n
-    if(ocupados.includes(h)) {
-      btn.disabled = true;
-    } else {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        state.hora = h;
-        document.getElementById("btn-next-step3").disabled = false; // Habilita ir al Paso 4
-      });
-    }
-
-    // Clasificar en contenedores (Mañana, Tarde, Noche)
-    const horaNum = parseInt(h.split(":")[0]);
-    if (horaNum < 12) mContainer.appendChild(btn);
-    else if (horaNum < 18) aContainer.appendChild(btn);
-    else eContainer.appendChild(btn);
-  });
-
-  // Ocultamos el loader y mostramos la grilla generada
-  loader.classList.add("hidden");
-  timesContainer.classList.remove("hidden");
-}
-
+// ==========================================
+// 4. RESUMEN Y ENVÍO DEL FORMULARIO
+// ==========================================
 function actualizarResumen() {
-  // Ahora el resumen muestra también la duración
   document.getElementById("sum-service").textContent = `${state.servicio} (${state.duracion})`;
   document.getElementById("sum-date").textContent = `📅 ${state.fechaDisplay} - ${state.hora} hs`;
   document.getElementById("sum-barber").textContent = `💈 Profesional: ${state.barbero}`;
@@ -241,7 +203,6 @@ document.getElementById("confirm").addEventListener("click", async () => {
   msgEl.style.color = "#fff";
   
   try {
-    // 🐛 BUG 2 CORREGIDO: Agregado Content-Type: application/json
     const res = await fetch(WEBHOOK_URL, { 
       method: "POST", 
       headers: { "Content-Type": "application/json" },
