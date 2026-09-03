@@ -1,146 +1,309 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!--
+    Hyperspace by HTML5 UP (Modificado para MAV Barber Studio)
+-->
 <html lang="es-AR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>MAV Barber Studio — Rosario</title>
-  <link rel="stylesheet" href="assets/styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-</head>
-<body>
+    <head>
+        <title>MAV Barber Studio | Rosario</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 
-  <!-- CAPA 1: LA VIDRIERA (LANDING PAGE) -->
-  <header class="hero">
-    <div class="hero-content">
-      <img src="img/logo.png" alt="MAV Barber Studio" class="logo" onerror="this.src='https://via.placeholder.com/120?text=MAV'" />
-      <h1>MAV BARBER STUDIO</h1>
-      <p class="location">Distinción y estilo en el corazón de Rosario</p>
-      <button class="cta-btn" onclick="document.getElementById('reserva').scrollIntoView({behavior: 'smooth'})">
-        TURNOS ONLINE
-      </button>
-    </div>
-  </header>
+        <!-- ESTILOS EXCLUSIVOS PARA EL TURNERO (WIZARD) -->
+        <style>
+            /* Adaptamos tus colores originales al entorno de la plantilla */
+            :root {
+                --accent-mav: #d4af37; /* Dorado */
+                --danger-mav: #d93838; /* Rojo */
+                --bg-card: rgba(0, 0, 0, 0.4);
+            }
+            .wizard-container {
+                max-width: 600px;
+                background: var(--bg-card);
+                border-radius: 12px; padding: 30px;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+            .wizard-step { display: none; animation: fadeIn 0.3s ease-out forwards; }
+            .wizard-step.active { display: block; }
+            .hidden { display: none !important; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  <section class="about-section">
-    <h2>EL ARTISTA DETRÁS DEL SILLÓN</h2>
-    <p>Maurito no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, en MAV Barber Studio priorizamos tu comodidad para que vivas una experiencia de primer nivel.</p>
-  </section>
+            .step-title { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; font-size: 1.2em; font-weight: bold; color: #fff;}
+            
+            /* Servicios */
+            .options-list { display: flex; flex-direction: column; gap: 15px; }
+            .opt-list-btn { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; color: #fff; cursor: pointer; text-align: left; transition: 0.2s; width: 100%;}
+            .opt-list-btn:hover { border-color: var(--accent-mav); background: rgba(255,255,255,0.1); }
+            .opt-list-btn.selected { border-color: var(--accent-mav); background: rgba(212,175,55,0.15); }
+            .srv-name { display: block; font-weight: bold; font-size: 1.1em; }
+            .srv-desc { display: block; font-size: 0.85em; color: rgba(255,255,255,0.5); margin-top: 5px; }
+            .srv-price { font-weight: bold; color: var(--accent-mav); font-size: 1.1em;}
 
-  <!-- CAPA 2: EL MOTOR DE RESERVAS (WIZARD) -->
-  <section id="reserva" class="booking-section">
-    <div class="wizard-container">
-      
-      <!-- PASO 1: SERVICIOS -->
-      <div id="step-1" class="wizard-step active">
-        <h3 class="step-title">1. Elegí el servicio</h3>
-        <div class="options-list">
-          <button class="opt-list-btn" data-val="Corte" data-price="$12.000" data-duration="40 min">
-            <div>
-              <span class="srv-name">Corte Clásico / Fade</span>
-              <span class="srv-desc">Diseño a medida y terminaciones a navaja.</span>
+            /* Barberos */
+            .agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .agent-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 25px 15px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.2s; }
+            .agent-card:hover { border-color: var(--accent-mav); }
+            .agent-card.selected { border-color: var(--accent-mav); background: rgba(212,175,55,0.15); }
+            .avatar { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: #fff; }
+
+            /* Calendario */
+            .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .month-nav { background: none; border: none; color: var(--accent-mav); font-size: 1.5em; cursor: pointer; padding: 0 15px; }
+            .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-bottom: 25px; }
+            .day-name { font-size: 0.85em; color: rgba(255,255,255,0.5); font-weight: bold; margin-bottom: 10px;}
+            .cal-day { padding: 12px 0; border-radius: 6px; cursor: pointer; font-size: 1em; border: 1px solid transparent; background: rgba(255,255,255,0.05); transition: 0.2s;}
+            .cal-day:hover:not(.disabled) { border-color: var(--accent-mav); }
+            .cal-day.disabled { background: transparent; color: rgba(255,255,255,0.2); cursor: not-allowed; }
+            .cal-day.selected { background: var(--accent-mav); color: #000; font-weight: bold; }
+
+            /* Horarios */
+            .time-block-label { font-size: 0.9em; color: rgba(255,255,255,0.5); margin: 20px 0 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+            .time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+            .time-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 6px; padding: 12px 5px; font-size: 0.9em; cursor: pointer; transition: 0.2s; width: 100%;}
+            .time-btn:hover:not(:disabled) { border-color: var(--accent-mav); }
+            .time-btn.selected { border-color: var(--accent-mav); background: var(--accent-mav); color: #000; font-weight: bold; }
+            .time-btn:disabled { opacity: 0.2; text-decoration: line-through; cursor: not-allowed;}
+
+            /* Formulario final */
+            .summary-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border-left: 4px solid var(--accent-mav); margin-bottom: 30px; }
+            .summary-box h4 { margin-bottom: 10px; color: var(--accent-mav); }
+            .sum-main { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: #fff;}
+            .sum-sub { font-size: 0.9em; color: rgba(255,255,255,0.6); margin-bottom: 5px;}
+            .sum-price { font-weight: bold; margin-top: 10px; color: var(--danger-mav); font-size: 1.2em;}
+            
+            .wizard-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+            .btn-back { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1em; padding: 10px;}
+            .btn-back:hover { color: #fff; }
+            .btn-next { background: none; border: none; color: var(--accent-mav); font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 10px;}
+            .btn-next:disabled { color: rgba(255,255,255,0.2); cursor: not-allowed;}
+            .confirm { background: var(--danger-mav); border: none; color: #fff; font-weight: bold; font-size: 1.1em; cursor: pointer; padding: 15px 30px; border-radius: 6px; transition: 0.2s;}
+            .confirm:hover { background: #b02a2a; }
+            .summary-msg { text-align: center; margin-top: 20px; font-weight: bold; }
+        </style>
+    </head>
+    <body class="is-preload">
+
+        <!-- Sidebar (Navegación Lateral) -->
+            <section id="sidebar">
+                <div class="inner">
+                    <nav>
+                        <ul>
+                            <li><a href="#intro">Inicio</a></li>
+                            <li><a href="#one">El Barbero</a></li>
+                            <li><a href="#two">Servicios</a></li>
+                            <li><a href="#three">Reservar Turno</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+
+        <!-- Wrapper Principal -->
+            <div id="wrapper">
+
+                <!-- Intro (Hero Section) -->
+                    <section id="intro" class="wrapper style1 fullscreen fade-up">
+                        <div class="inner">
+                            <h1>MAV Barber Studio</h1>
+                            <p>Distinción, técnica y estilo en el corazón de Rosario.<br />
+                            Tu imagen personal llevada al siguiente nivel.</p>
+                            <ul class="actions">
+                                <li><a href="#three" class="button primary scrolly">Turnos On Line</a></li>
+                            </ul>
+                        </div>
+                    </section>
+
+                <!-- One (Perfil del Barbero) -->
+                    <section id="one" class="wrapper style2 spotlights">
+                        <section>
+                            <!-- Podés cambiar pic01.jpg por una foto real de Mauritto -->
+                            <a href="#" class="image"><img src="images/pic01.jpg" alt="Mauritto" data-position="center center" /></a>
+                            <div class="content">
+                                <div class="inner">
+                                    <h2>El Artista Detrás del Sillón</h2>
+                                    <p>Mauritto no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, en MAV Barber Studio priorizamos tu comodidad para que vivas una experiencia de primer nivel.</p>
+                                    <ul class="actions">
+                                        <li><a href="#three" class="button scrolly">Agendar con Mauritto</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                <!-- Two (Características / Servicios) -->
+                    <section id="two" class="wrapper style3 fade-up">
+                        <div class="inner">
+                            <h2>Nuestra Propuesta</h2>
+                            <p>Nos especializamos en brindar un servicio de alta calidad, fusionando la barbería tradicional con las tendencias modernas.</p>
+                            <div class="features">
+                                <section>
+                                    <span class="icon solid major fa-cut"></span>
+                                    <h3>Cortes de Precisión</h3>
+                                    <p>Diseño a medida, fades impecables y terminaciones a navaja cuidando cada detalle.</p>
+                                </section>
+                                <section>
+                                    <span class="icon solid major fa-fire"></span>
+                                    <h3>Ritual de Barba</h3>
+                                    <p>Afeitado tradicional con toallas calientes, vapor ozono y perfilado perfecto.</p>
+                                </section>
+                                <section>
+                                    <span class="icon solid major fa-tint"></span>
+                                    <h3>Colorimetría</h3>
+                                    <p>Mechitas, platinados y colorimetría avanzada para destacar tu estilo personal.</p>
+                                </section>
+                                <section>
+                                    <span class="icon solid major fa-coffee"></span>
+                                    <h3>Zona de Relax</h3>
+                                    <p>Disfrutá de un buen café o una bebida mientras esperás tu turno en un ambiente climatizado.</p>
+                                </section>
+                            </div>
+                        </div>
+                    </section>
+
+                <!-- Three (El Turnero / Wizard) -->
+                    <section id="three" class="wrapper style1 fade-up">
+                        <div class="inner">
+                            <h2>Reservar Turno</h2>
+                            <p>Elegí tu servicio, seleccioná el horario que mejor te quede y confirmá tu cita en segundos.</p>
+                            
+                            <!-- INICIO DEL WIZARD (Inyectado acá) -->
+                            <div class="wizard-container">
+                                
+                                <!-- PASO 1: SERVICIOS -->
+                                <div id="step-1" class="wizard-step active">
+                                  <h3 class="step-title">1. Elegí el servicio</h3>
+                                  <div class="options-list">
+                                    <button class="opt-list-btn" data-val="Corte" data-price="$12.000" data-duration="40 min">
+                                      <div>
+                                        <span class="srv-name">Corte Clásico / Fade</span>
+                                        <span class="srv-desc">Diseño a medida y terminaciones a navaja.</span>
+                                      </div>
+                                      <span class="srv-price">$12.000</span>
+                                    </button>
+                                    <button class="opt-list-btn" data-val="Corte + barba" data-price="$16.000" data-duration="60 min">
+                                      <div>
+                                        <span class="srv-name">Corte + Barba Premium</span>
+                                        <span class="srv-desc">Ritual completo con toallas calientes.</span>
+                                      </div>
+                                      <span class="srv-price">$16.000</span>
+                                    </button>
+                                    <button class="opt-list-btn" data-val="Mechitas" data-price="$20.000" data-duration="90 min">
+                                      <div>
+                                        <span class="srv-name">Color / Mechitas</span>
+                                        <span class="srv-desc">Iluminación y estilo para destacar.</span>
+                                      </div>
+                                      <span class="srv-price">$20.000</span>
+                                    </button>
+                                  </div>
+                                </div>
+                          
+                                <!-- PASO 2: BARBERO -->
+                                <div id="step-2" class="wizard-step hidden">
+                                  <h3 class="step-title">2. ¿Con quién te cortás?</h3>
+                                  <div class="agents-grid">
+                                    <button class="agent-card" data-val="Mauritto">
+                                      <div class="avatar">M</div>
+                                      <span style="font-weight: bold; font-size: 1.1em;">Mauritto</span>
+                                    </button>
+                                     <button class="agent-card" data-val="Cualquiera">
+                                      <div class="avatar">?</div>
+                                      <span style="font-weight: bold; font-size: 1.1em;">Cualquiera</span>
+                                    </button>
+                                  </div>
+                                  <div class="wizard-footer">
+                                    <button class="btn-back" onclick="goToStep(1)">← Atrás</button>
+                                  </div>
+                                </div>
+                          
+                                <!-- PASO 3: CALENDARIO -->
+                                <div id="step-3" class="wizard-step hidden">
+                                  <h3 class="step-title">3. Fecha y hora</h3>
+                                  <div class="calendar-header">
+                                    <button id="prev-month" class="month-nav">❮</button>
+                                    <h4 class="month-title" id="current-month-display" style="margin: 0; color: #fff;">Septiembre 2026</h4>
+                                    <button id="next-month" class="month-nav">❯</button>
+                                  </div>
+                                  
+                                  <div class="calendar-grid" id="calendar-grid">
+                                    <div class="day-name">D</div><div class="day-name">L</div><div class="day-name">M</div>
+                                    <div class="day-name">M</div><div class="day-name">J</div><div class="day-name">V</div><div class="day-name">S</div>
+                                    <!-- Se llena con JS -->
+                                  </div>
+                                  
+                                  <div id="time-selection-container" class="hidden">
+                                     <h4 style="margin: 0; color: var(--accent-mav); border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 10px;">Horarios para el <span id="selected-date-display"></span></h4>
+                                     <div id="loading-times" class="hidden" style="margin-top: 15px;">Cargando disponibilidad...</div>
+                                     
+                                     <!-- Bloques de horario -->
+                                     <div class="time-blocks" id="times-container">
+                                        <p class="time-block-label">Mañana</p>
+                                        <div class="time-grid" id="times-morning"></div>
+                                        
+                                        <p class="time-block-label">Tarde</p>
+                                        <div class="time-grid" id="times-afternoon"></div>
+                                        
+                                        <p class="time-block-label">Noche</p>
+                                        <div class="time-grid" id="times-evening"></div>
+                                     </div>
+                                  </div>
+                          
+                                  <div class="wizard-footer">
+                                    <button class="btn-back" onclick="goToStep(2)">← Atrás</button>
+                                    <button class="btn-next" id="btn-next-step3" onclick="goToStep(4)" disabled>Siguiente →</button>
+                                  </div>
+                                </div>
+                          
+                                <!-- PASO 4: DATOS DE CONTACTO -->
+                                <div id="step-4" class="wizard-step hidden">
+                                  <div class="summary-box">
+                                    <h4>Resumen de tu cita</h4>
+                                    <p id="sum-service" class="sum-main">-</p>
+                                    <p id="sum-date" class="sum-sub">-</p>
+                                    <p id="sum-barber" class="sum-sub">-</p>
+                                    <p id="sum-price" class="sum-price">-</p>
+                                  </div>
+                          
+                                  <h3 class="step-title">4. Tus Datos</h3>
+                                  <div class="field-group" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <input type="text" id="name" placeholder="Nombre completo" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);" />
+                                    <input type="tel" id="phone" placeholder="WhatsApp (Ej: 341...)" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);" />
+                                  </div>
+                                  
+                                  <div class="wizard-footer">
+                                    <button class="btn-back" onclick="goToStep(3)">← Atrás</button>
+                                    <button class="confirm" id="confirm">Confirmar Reserva</button>
+                                  </div>
+                                  <p class="summary-msg" id="summary"></p>
+                                </div>
+                          
+                              </div>
+                              <!-- FIN DEL WIZARD -->
+
+                        </div>
+                    </section>
+
             </div>
-            <span class="srv-price">$12.000</span>
-          </button>
-          <button class="opt-list-btn" data-val="Corte + barba" data-price="$16.000" data-duration="60 min">
-            <div>
-              <span class="srv-name">Corte + Barba Premium</span>
-              <span class="srv-desc">Ritual completo con toallas calientes.</span>
-            </div>
-            <span class="srv-price">$16.000</span>
-          </button>
-          <button class="opt-list-btn" data-val="Mechitas" data-price="$50.000" data-duration="90 min">
-            <div>
-              <span class="srv-name">Color / Mechitas</span>
-              <span class="srv-desc">Iluminación y estilo para destacar.</span>
-            </div>
-            <span class="srv-price">$50.000</span>
-          </button>
-        </div>
-      </div>
 
-      <!-- PASO 2: BARBERO -->
-      <div id="step-2" class="wizard-step hidden">
-        <h3 class="step-title">2. ¿Con quién te cortás?</h3>
-        <div class="agents-grid">
-          <button class="agent-card" data-val="Mauritto">
-            <div class="avatar">M</div>
-            <span>Mauritto</span>
-          </button>
-           <button class="agent-card" data-val="Cualquiera">
-            <div class="avatar">?</div>
-            <span>Cualquier Barbero</span>
-          </button>
-        </div>
-        <div class="wizard-footer">
-          <button class="btn-back" onclick="goToStep(1)">← Atrás</button>
-        </div>
-      </div>
+        <!-- Footer -->
+            <footer id="footer" class="wrapper style1-alt">
+                <div class="inner">
+                    <ul class="menu">
+                        <li>&copy; MAV Barber Studio. Zona Oeste, Rosario.</li>
+                    </ul>
+                </div>
+            </footer>
 
-      <!-- PASO 3: CALENDARIO Y HORARIOS (Como AgendaPro) -->
-      <div id="step-3" class="wizard-step hidden">
-        <h3 class="step-title">3. Fecha y hora</h3>
-        <div class="calendar-header">
-          <button id="prev-month" class="month-nav">❮</button>
-          <h4 class="month-title" id="current-month-display">Septiembre 2026</h4>
-          <button id="next-month" class="month-nav">❯</button>
-        </div>
-        
-        <div class="calendar-grid" id="calendar-grid">
-          <div class="day-name">D</div><div class="day-name">L</div><div class="day-name">M</div>
-          <div class="day-name">M</div><div class="day-name">J</div><div class="day-name">V</div><div class="day-name">S</div>
-          <!-- Se llena con JS -->
-        </div>
-        
-        <div id="time-selection-container" class="hidden">
-           <h4 class="time-subtitle">Horarios para el <span id="selected-date-display" style="color:var(--accent)"></span></h4>
-           <div id="loading-times" class="hidden">Cargando...</div>
-           
-           <!-- Bloques de horario tipo AgendaPro -->
-           <div class="time-blocks" id="times-container">
-              <p class="time-block-label">Mañana</p>
-              <div class="time-grid" id="times-morning"></div>
-              
-              <p class="time-block-label">Tarde</p>
-              <div class="time-grid" id="times-afternoon"></div>
-              
-              <p class="time-block-label">Noche</p>
-              <div class="time-grid" id="times-evening"></div>
-           </div>
-        </div>
+        <!-- Scripts de la Plantilla -->
+            <script src="assets/js/jquery.min.js"></script>
+            <script src="assets/js/jquery.scrollex.min.js"></script>
+            <script src="assets/js/jquery.scrolly.min.js"></script>
+            <script src="assets/js/browser.min.js"></script>
+            <script src="assets/js/breakpoints.min.js"></script>
+            <script src="assets/js/util.js"></script>
+            <script src="assets/js/main.js"></script>
+            
+        <!-- Script del Turnero (Tu script depurado) -->
+            <script src="script.js"></script>
 
-        <div class="wizard-footer">
-          <button class="btn-back" onclick="goToStep(2)">← Atrás</button>
-          <button class="btn-next" id="btn-next-step3" onclick="goToStep(4)" disabled>Siguiente →</button>
-        </div>
-      </div>
-
-      <!-- PASO 4: DATOS DE CONTACTO -->
-      <div id="step-4" class="wizard-step hidden">
-        <div class="summary-box">
-          <h4>Resumen de cita</h4>
-          <p id="sum-service" class="sum-main">-</p>
-          <p id="sum-date" class="sum-sub">-</p>
-          <p id="sum-barber" class="sum-sub">-</p>
-          <p id="sum-price" class="sum-price">-</p>
-        </div>
-
-        <h3 class="step-title">4. Tus Datos</h3>
-        <div class="field-group">
-          <input type="text" id="name" placeholder="Nombre completo" required />
-          <input type="tel" id="phone" placeholder="WhatsApp (Ej: 341...)" required />
-          <input type="email" id="mail" placeholder="Mail (Opcional)" />
-        </div>
-        
-        <div class="wizard-footer">
-          <button class="btn-back" onclick="goToStep(3)">← Atrás</button>
-          <button class="confirm" id="confirm">Confirmar Reserva</button>
-        </div>
-        <p class="summary-msg" id="summary"></p>
-      </div>
-
-    </div>
-  </section>
-
-  <script src="assets/script.js"></script>
-</body>
+    </body>
 </html>
