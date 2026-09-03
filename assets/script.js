@@ -130,9 +130,11 @@ function actualizarResumen() {
 document.getElementById('confirm').addEventListener('click', function() {
     const nombre = document.getElementById('name').value;
     const telefono = document.getElementById('phone').value;
+    const email = document.getElementById('email').value; // Capturamos el mail
     
-    if(nombre === '' || telefono === '') {
-        alert('Por favor, completá tu nombre y WhatsApp para confirmar.');
+    // Ahora exigimos los tres datos
+    if(nombre === '' || telefono === '' || email === '') {
+        alert('Por favor, completá todos tus datos para confirmar tu turno.');
         return;
     }
     
