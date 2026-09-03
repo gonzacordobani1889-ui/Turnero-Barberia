@@ -113,3 +113,18 @@ button.agent-card {
 button.time-btn {
     padding: 12px 5px !important;
 }
+/* =========================================
+   PARCHE PARA BOTONES DEL FOOTER (Atrás / Siguiente / Confirmar)
+   ========================================= */
+button.btn-back, 
+button.btn-next, 
+button.confirm {
+    height: auto !important;
+    line-height: normal !important;
+    min-width: 0 !important; /* Matamos el ancho gigante de Hyperspace */
+    border-radius: 8px !important; /* Bordes prolijos */
+}
+
+button.btn-back, button.btn-next {
+    padding: 10px 15px !important;
+}
