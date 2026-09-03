@@ -2,93 +2,145 @@
 <html lang="es-AR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MAV Barber Studio — Reservá tu turno</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MAV Barber Studio — Rosario</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <img src="img/logo.png" alt="MAV Barber Studio" class="main-logo" />
-      <p>Distinción y estilo en el corazón de Rosario. Reservá tu turno.</p>
-    </header>
 
-    <!-- 1. EL TURNERO VA PRIMERO (Conversión directa) -->
-    <div class="card">
-      <p class="step-label">1. Elegí el servicio</p>
-      <div class="options" id="services">
-        <button class="opt-btn" data-val="Corte" data-price="$12.000">
-          <span>Corte</span>
-          <span class="price">$12.000</span>
-        </button>
-        <button class="opt-btn" data-val="Corte + barba" data-price="$16.000">
-          <span>Corte + barba</span>
-          <span class="price">$16.000</span>
-        </button>
-        <button class="opt-btn" data-val="Barba" data-price="$4.000">
-          <span>Barba</span>
-          <span class="price">$4.000</span>
-        </button>
-        <button class="opt-btn" data-val="Mechitas" data-price="$20.000">
-          <span>Mechitas</span>
-          <span class="price">$20.000</span>
-        </button>
-      </div>
-      
-      <p class="step-label">2. Elegí el día</p>
-      <!-- Selector de días mejorado con flechas / mes scrolleable -->
-      <div class="day-options-container">
-        <button type="button" class="scroll-arrow" id="scroll-left">&#10094;</button>
-        <div class="day-options" id="days"></div>
-        <button type="button" class="scroll-arrow" id="scroll-right">&#10095;</button>
-      </div>
-      
-      <p class="step-label">3. Elegí el horario</p>
-      <div class="time-options" id="times"></div>
-      
-      <p class="step-label">4. Tus datos</p>
-      <div class="field-group">
-        <input type="text" id="name" placeholder="Nombre y apellido" />
-        <input type="tel" id="phone" placeholder="Tu teléfono" />
-        <input type="email" id="mail" placeholder="Mail (para el recordatorio)" />
-      </div>
-      
-      <button class="confirm" id="confirm">Confirmar turno</button>
-      <p class="summary" id="summary"></p>
-
-      <div class="wpp-contact">
-        <p>¿Tenés alguna consulta particular?</p>
-        <a href="https://wa.link/yi96jv" target="_blank" class="wpp-link">Contactanos por WhatsApp</a>
-      </div>
+  <!-- CAPA 1: LA VIDRIERA (LANDING PAGE) -->
+  <header class="hero">
+    <div class="hero-content">
+      <img src="img/logo.png" alt="MAV Barber Studio" class="logo" onerror="this.src='https://via.placeholder.com/120?text=MAV'" />
+      <h1>SOMOS BARBEROS</h1>
+      <p class="location">Distinción y estilo en el corazón de Rosario</p>
+      <button class="cta-btn" onclick="document.getElementById('reserva').scrollIntoView({behavior: 'smooth'})">
+        TURNOS ON LINE
+      </button>
     </div>
+  </header>
 
-    <!-- 2. SECCIONES INFORMATIVAS ABAJO (Estilo Landing Page) -->
-    <div class="card info-card" style="margin-top: 24px;">
-      <h3 class="section-title">El artista detrás del sillón</h3>
-      <p class="bio-text">
-        <strong>Mauritto</strong> no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, su objetivo es que salgas del estudio con la mejor versión de vos mismo. En MAV Barber Studio no venís a cortarte el pelo, venís a vivir una experiencia de primer nivel.
-      </p>
+  <section class="about-section">
+    <h2>EL ARTISTA DETRÁS DEL SILLÓN</h2>
+    <p>Mauritto no es solo un barbero, es tu asesor de imagen personal. Con un estilo perfeccionista y atención al detalle, en MAV Barber Studio priorizamos tu comodidad para que vivas una experiencia de primer nivel.</p>
+  </section>
+
+  <!-- CAPA 2: EL MOTOR DE RESERVAS (WIZARD) -->
+  <section id="reserva" class="booking-section">
+    <div class="wizard-container">
+      
+      <!-- PASO 1: SERVICIOS -->
+      <div id="step-1" class="wizard-step active">
+        <h3 class="step-title">1. Elegí el servicio</h3>
+        <div class="options-list">
+          <button class="opt-list-btn" data-val="Corte" data-price="$12.000" data-duration="40 min">
+            <div>
+              <span class="srv-name">Corte Clásico / Fade</span>
+              <span class="srv-desc">Diseño a medida y terminaciones a navaja.</span>
+            </div>
+            <span class="srv-price">$12.000</span>
+          </button>
+          <button class="opt-list-btn" data-val="Corte + barba" data-price="$16.000" data-duration="60 min">
+            <div>
+              <span class="srv-name">Corte + Barba Premium</span>
+              <span class="srv-desc">Ritual completo con toallas calientes.</span>
+            </div>
+            <span class="srv-price">$16.000</span>
+          </button>
+          <button class="opt-list-btn" data-val="Mechitas" data-price="$20.000" data-duration="90 min">
+            <div>
+              <span class="srv-name">Color / Mechitas</span>
+              <span class="srv-desc">Iluminación y estilo para destacar.</span>
+            </div>
+            <span class="srv-price">$20.000</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 2: BARBERO -->
+      <div id="step-2" class="wizard-step hidden">
+        <h3 class="step-title">2. ¿Con quién te cortás?</h3>
+        <div class="agents-grid">
+          <button class="agent-card" data-val="Mauritto">
+            <div class="avatar">M</div>
+            <span>Mauritto</span>
+          </button>
+           <button class="agent-card" data-val="Cualquiera">
+            <div class="avatar">?</div>
+            <span>Cualquier Barbero</span>
+          </button>
+        </div>
+        <div class="wizard-footer">
+          <button class="btn-back" onclick="goToStep(1)">← Atrás</button>
+        </div>
+      </div>
+
+      <!-- PASO 3: CALENDARIO Y HORARIOS (Como AgendaPro) -->
+      <div id="step-3" class="wizard-step hidden">
+        <h3 class="step-title">3. Fecha y hora</h3>
+        <div class="calendar-header">
+          <button id="prev-month" class="month-nav">❮</button>
+          <h4 class="month-title" id="current-month-display">Septiembre 2026</h4>
+          <button id="next-month" class="month-nav">❯</button>
+        </div>
+        
+        <div class="calendar-grid" id="calendar-grid">
+          <div class="day-name">D</div><div class="day-name">L</div><div class="day-name">M</div>
+          <div class="day-name">M</div><div class="day-name">J</div><div class="day-name">V</div><div class="day-name">S</div>
+          <!-- Se llena con JS -->
+        </div>
+        
+        <div id="time-selection-container" class="hidden">
+           <h4 class="time-subtitle">Horarios para el <span id="selected-date-display" style="color:var(--accent)"></span></h4>
+           <div id="loading-times" class="hidden">Cargando...</div>
+           
+           <!-- Bloques de horario tipo AgendaPro -->
+           <div class="time-blocks" id="times-container">
+              <p class="time-block-label">Mañana</p>
+              <div class="time-grid" id="times-morning"></div>
+              
+              <p class="time-block-label">Tarde</p>
+              <div class="time-grid" id="times-afternoon"></div>
+              
+              <p class="time-block-label">Noche</p>
+              <div class="time-grid" id="times-evening"></div>
+           </div>
+        </div>
+
+        <div class="wizard-footer">
+          <button class="btn-back" onclick="goToStep(2)">← Atrás</button>
+          <button class="btn-next" id="btn-next-step3" onclick="goToStep(4)" disabled>Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- PASO 4: DATOS DE CONTACTO -->
+      <div id="step-4" class="wizard-step hidden">
+        <div class="summary-box">
+          <h4>Resumen de cita</h4>
+          <p id="sum-service" class="sum-main">-</p>
+          <p id="sum-date" class="sum-sub">-</p>
+          <p id="sum-barber" class="sum-sub">-</p>
+          <p id="sum-price" class="sum-price">-</p>
+        </div>
+
+        <h3 class="step-title">4. Tus Datos</h3>
+        <div class="field-group">
+          <input type="text" id="name" placeholder="Nombre completo" required />
+          <input type="tel" id="phone" placeholder="WhatsApp (Ej: 341...)" required />
+          <input type="email" id="mail" placeholder="Mail (Opcional)" />
+        </div>
+        
+        <div class="wizard-footer">
+          <button class="btn-back" onclick="goToStep(3)">← Atrás</button>
+          <button class="confirm" id="confirm">Confirmar Reserva</button>
+        </div>
+        <p class="summary-msg" id="summary"></p>
+      </div>
+
     </div>
+  </section>
 
-    <div class="card info-card">
-      <h3 class="section-title">Nuestros Servicios</h3>
-      <ul class="service-list">
-        <li>
-          <strong>Corte Clásico / Fade:</strong> Diseño a medida según tus facciones y tipo de rostro. Terminaciones a navaja y productos premium.
-        </li>
-        <li>
-          <strong>Corte + Barba:</strong> El ritual completo. Perfilado simétrico, toallas calientes y aceites esenciales para cuidar tu piel.
-        </li>
-        <li>
-          <strong>Solo Barba:</strong> Mantenimiento, simetría y contornos perfectos para destacar tu mandíbula.
-        </li>
-        <li>
-          <strong>Mechitas / Color:</strong> Iluminación y estilo para destacar. Técnicas modernas cuidando la salud de tu pelo.
-        </li>
-      </ul>
-    </div>
-
-  </div>
   <script src="assets/script.js"></script>
 </body>
 </html>
