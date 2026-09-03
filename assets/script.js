@@ -1,263 +1,201 @@
-// URL de tu Webhook en n8n
-const WEBHOOK_URL = "https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno";
+// ==========================================
+// CONFIGURACIÓN (REEMPLAZA CON TU WEBHOOK DE N8N)
+// ==========================================
+const WEBHOOK_URL = "https://tu-url-de-n8n.com/webhook/turnos"; 
 
-// Estado de la reserva
-const state = {
-  servicio: null,
-  precio: null,
-  dia: null, // Formato ISO: YYYY-MM-DD
-  hora: null,
-  nombre: "",
-  telefono: "",
-  mail: ""
-};
+const state = { servicio: null, precio: null, duracion: null, barbero: null, diaIso: null, fechaDisplay: null, hora: null };
+const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+let mesActual = new Date().getMonth();
+let anioActual = new Date().getFullYear();
 
-const SERVICIOS = {
-  "Corte": "$12.000",
-  "Corte + barba": "$16.000",
-  "Barba": "$4.000",
-  "Mechitas": "$50.000"
-};
+function goToStep(step) {
+  document.querySelectorAll('.wizard-step').forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
+  document.getElementById(`step-${step}`).classList.remove('hidden');
+  document.getElementById(`step-${step}`).classList.add('active');
+  
+  if(step === 3) generarCalendario(mesActual, anioActual);
+  if(step === 4) actualizarResumen();
+}
 
-// Horarios válidos
-const HORARIOS_VALIDOS = [
-  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", 
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", 
-  "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", 
-  "19:00", "19:30", "20:00", "20:30", "21:00"
-];
-
-// Nombres de días
-const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-
-// Inicialización cuando carga la página
-document.addEventListener("DOMContentLoaded", () => {
-  cargarDias(7);
-  configurarServicios();
-  configurarFormulario();
+document.querySelectorAll('.opt-list-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.opt-list-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    
+    state.servicio = btn.querySelector('.srv-name').textContent;
+    state.precio = btn.dataset.price;
+    // 🐛 BUG 1 CORREGIDO: Capturamos duración
+    state.duracion = btn.dataset.duration; 
+    
+    setTimeout(() => goToStep(2), 200);
+  });
 });
 
-// 1. GENERAR BOTONES DE DÍAS (Envía YYYY-MM-DD a n8n)
-function cargarDias(cantidad = 7) {
-  const cont = document.getElementById("days");
-  if (!cont) return;
-  cont.innerHTML = "";
+document.querySelectorAll('.agent-card').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.agent-card').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.barbero = btn.dataset.val;
+    setTimeout(() => goToStep(3), 200);
+  });
+});
 
-  const hoy = new Date();
-  let agregados = 0;
-  let offset = 1;
+// Lógica de Calendario
+document.getElementById('prev-month').addEventListener('click', () => { mesActual--; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
+document.getElementById('next-month').addEventListener('click', () => { mesActual++; siPasaDeAnio(); generarCalendario(mesActual, anioActual); });
 
-  while (agregados < cantidad) {
-    const fecha = new Date(hoy);
-    fecha.setDate(hoy.getDate() + offset);
-    offset++;
+function siPasaDeAnio() {
+  if (mesActual < 0) { mesActual = 11; anioActual--; }
+  else if (mesActual > 11) { mesActual = 0; anioActual++; }
+}
 
-    // Saltear domingos
-    if (fecha.getDay() === 0) continue;
+function generarCalendario(mes, anio) {
+  const grid = document.getElementById("calendar-grid");
+  const headers = grid.innerHTML.match(/<div class="day-name">.*?<\/div>/g).join('');
+  grid.innerHTML = headers;
+  
+  document.getElementById("current-month-display").textContent = `${MESES[mes]} ${anio}`;
+  
+  const primerDia = new Date(anio, mes, 1).getDay();
+  const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+  const hoyMidnight = new Date(); hoyMidnight.setHours(0,0,0,0);
 
-    const yyyy = fecha.getFullYear();
-    const mm = String(fecha.getMonth() + 1).padStart(2, "0");
-    const dd = String(fecha.getDate()).padStart(2, "0");
-    const isoDate = `${yyyy}-${mm}-${dd}`;
+  for (let i = 0; i < primerDia; i++) grid.appendChild(document.createElement("div"));
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "opt-btn btn-dia";
-    btn.dataset.val = isoDate;
-    btn.innerHTML = `<span class="day-name">${DIAS_SEMANA[fecha.getDay()]}</span> <span class="day-num">${fecha.getDate()}</span>`;
+  for (let i = 1; i <= diasEnMes; i++) {
+    const fecha = new Date(anio, mes, i);
+    const div = document.createElement("div");
+    div.className = "cal-day";
+    div.textContent = i;
     
-    btn.addEventListener("click", () => seleccionarDia(isoDate, btn));
-    cont.appendChild(btn);
-    agregados++;
+    const isoDate = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    const displayStr = `${i} de ${MESES[mes]}`;
+
+    if (fecha < hoyMidnight || fecha.getDay() === 0) {
+      div.classList.add("disabled");
+    } else {
+      div.addEventListener("click", () => {
+        document.querySelectorAll(".cal-day").forEach(d => d.classList.remove("selected"));
+        div.classList.add("selected");
+        
+        state.diaIso = isoDate; 
+        state.fechaDisplay = displayStr; 
+        state.hora = null;
+        
+        document.getElementById("btn-next-step3").disabled = true;
+        document.getElementById("selected-date-display").textContent = displayStr;
+        document.getElementById("time-selection-container").classList.remove("hidden");
+        
+        // 🐛 BUG 3 y 4 CORREGIDOS: Llamamos a la función asíncrona real
+        cargarHorariosReales(isoDate);
+      });
+    }
+    grid.appendChild(div);
   }
 }
 
-// 2. SELECCIONAR DÍA Y CONSULTAR OCUPADOS (VERSIÓN SIN LAG)
-async function seleccionarDia(fechaIso, btnElemento) {
-  // 1. LÓGICA DE UI INSTANTÁNEA (Antes del fetch)
-  state.dia = fechaIso;
-  state.hora = null;
+// 🐛 BUGS 3 y 4 CORREGIDOS: Fetch real a n8n y uso de estado "Loading"
+async function cargarHorariosReales(isoDate) {
+  const loader = document.getElementById("loading-times");
+  const timesContainer = document.getElementById("times-container");
+  const mContainer = document.getElementById("times-morning");
+  const aContainer = document.getElementById("times-afternoon");
+  const eContainer = document.getElementById("times-evening");
 
-  // Remueve la selección anterior y selecciona el nuevo botón al instante
-  document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("selected"));
-  btnElemento.classList.add("selected");
+  // Mostramos el loader y ocultamos los horarios viejos
+  loader.classList.remove("hidden");
+  timesContainer.classList.add("hidden");
+  mContainer.innerHTML = "";
+  aContainer.innerHTML = "";
+  eContainer.innerHTML = "";
 
-  // Limpia los horarios viejos y muestra el estado de carga enseguida
-  renderizarHorarios([], true);
+  // Horarios de trabajo base de la barbería
+  const horariosBase = ["09:00", "09:40", "10:20", "11:00", "11:40", "12:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20", "19:00", "19:40"];
+  let ocupados = [];
 
-  // 2. PETICIÓN EN SEGUNDO PLANO
   try {
-    const response = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(fechaIso)}`, {
+    // Consulta GET a n8n (asegurate que tu webhook GET devuelva un JSON: { "ocupados": ["09:00", "11:00"] })
+    const res = await fetch(`${WEBHOOK_URL}?dia=${encodeURIComponent(isoDate)}`, {
       method: "GET",
       headers: { "Accept": "application/json" }
     });
-
-    const data = await response.json();
-    const ocupados = Array.isArray(data.ocupados) ? data.ocupados : [];
     
-    // Una vez que llegan los datos, actualiza los botones
-    renderizarHorarios(ocupados, false);
-  } catch (err) {
-    console.error("Error al consultar disponibilidad:", err);
-    // Si falla, muestra todo libre para que el error no trabe al usuario (n8n lo rebotará luego si está mal)
-    renderizarHorarios([], false); 
-  }
-}
-
-// 3. RENDERIZAR BOTONES DE HORARIOS Y DESHABILITAR OCUPADOS
-function renderizarHorarios(ocupados = [], cargando = false) {
-  const cont = document.getElementById("times");
-  if (!cont) return;
-  cont.innerHTML = "";
-
-  if (cargando) {
-    cont.innerHTML = "<p class='loading-text' style='grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 13px;'>Cargando horarios disponibles...</p>";
-    return;
+    if(res.ok) {
+        const data = await res.json();
+        if(Array.isArray(data.ocupados)) ocupados = data.ocupados;
+    }
+  } catch(e) {
+    console.error("Error cargando horarios de n8n:", e);
+    // Si la API falla, el código sigue y asume todo libre (es preferible rebotar en la confirmación que dejar colgada la app)
   }
 
-  HORARIOS_VALIDOS.forEach(hora => {
+  // Renderizar y deshabilitar horarios ocupados
+  horariosBase.forEach(h => {
     const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "opt-btn btn-hora";
-    btn.textContent = hora;
+    btn.className = "time-btn"; 
+    btn.textContent = h;
     
-    const estaOcupado = ocupados.includes(hora);
-    if (estaOcupado) {
+    // Validar contra lo que trajo el Sheets vía n8n
+    if(ocupados.includes(h)) {
       btn.disabled = true;
-      btn.classList.add("occupied");
     } else {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".btn-hora").forEach(b => b.classList.remove("selected"));
+        document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
         btn.classList.add("selected");
-        state.hora = hora;
+        state.hora = h;
+        document.getElementById("btn-next-step3").disabled = false; // Habilita ir al Paso 4
       });
     }
-    cont.appendChild(btn);
+
+    // Clasificar en contenedores (Mañana, Tarde, Noche)
+    const horaNum = parseInt(h.split(":")[0]);
+    if (horaNum < 12) mContainer.appendChild(btn);
+    else if (horaNum < 18) aContainer.appendChild(btn);
+    else eContainer.appendChild(btn);
   });
+
+  // Ocultamos el loader y mostramos la grilla generada
+  loader.classList.add("hidden");
+  timesContainer.classList.remove("hidden");
 }
 
-// 4. SELECCIÓN DE SERVICIO (Sincronizado con tus botones HTML #services .opt-btn)
-function configurarServicios() {
-  const botonesServicio = document.querySelectorAll("#services .opt-btn");
-  botonesServicio.forEach(btn => {
-    btn.addEventListener("click", () => {
-      botonesServicio.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-      
-      const nombreServicio = btn.dataset.val;
-      if (SERVICIOS[nombreServicio]) {
-        state.servicio = nombreServicio;
-        state.precio = btn.dataset.price || SERVICIOS[nombreServicio];
-      }
-    });
-  });
+function actualizarResumen() {
+  // Ahora el resumen muestra también la duración
+  document.getElementById("sum-service").textContent = `${state.servicio} (${state.duracion})`;
+  document.getElementById("sum-date").textContent = `📅 ${state.fechaDisplay} - ${state.hora} hs`;
+  document.getElementById("sum-barber").textContent = `💈 Profesional: ${state.barbero}`;
+  document.getElementById("sum-price").textContent = `Total: ${state.precio}`;
 }
 
-// 5. CONFIGURAR EVENTO DE ENVÍO (Escucha el botón #confirm)
-function configurarFormulario() {
-  const btnConfirmar = document.getElementById("confirm");
-  if (!btnConfirmar) return;
-
-  btnConfirmar.addEventListener("click", async () => {
-    await enviarReserva();
-  });
-}
-
-// 6. ENVIAR RESERVA (Petición POST a n8n y tarjeta interactiva de confirmación)
-async function enviarReserva() {
-  state.nombre = document.getElementById("name")?.value.trim() || "";
-  state.telefono = document.getElementById("phone")?.value.trim() || "";
-  state.mail = document.getElementById("mail")?.value.trim() || "";
-
-  if (!state.servicio) return mostrarMensaje("Por favor, elegí un servicio.", "error");
-  if (!state.dia) return mostrarMensaje("Por favor, elegí un día.", "error");
-  if (!state.hora) return mostrarMensaje("Por favor, elegí un horario.", "error");
-  if (!state.nombre) return mostrarMensaje("Por favor, ingresá tu nombre y apellido.", "error");
-  if (!state.telefono) return mostrarMensaje("Por favor, ingresá tu teléfono.", "error");
-
-  const btnConfirm = document.getElementById("confirm");
-  if (btnConfirm) btnConfirm.disabled = true;
-
-  mostrarMensaje("Procesando reserva...", "");
-
-  const payload = {
-    servicio: state.servicio,
-    precio: state.precio,
-    dia: state.dia,
-    hora: state.hora,
-    nombre: state.nombre,
-    telefono: state.telefono,
-    mail: state.mail
-  };
-
+document.getElementById("confirm").addEventListener("click", async () => {
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  
+  if(!name || !phone) return alert("Por favor, completá tu Nombre y Teléfono");
+  
+  const payload = { ...state, nombre: name, telefono: phone };
+  const msgEl = document.getElementById("summary");
+  
+  msgEl.textContent = "Procesando..."; 
+  msgEl.style.color = "#fff";
+  
   try {
-    const response = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify(payload)
+    // 🐛 BUG 2 CORREGIDO: Agregado Content-Type: application/json
+    const res = await fetch(WEBHOOK_URL, { 
+      method: "POST", 
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload) 
     });
-
-    const data = await response.json();
-
-    if (response.ok && data.ok) {
-      const summary = document.getElementById("summary");
-      if (summary) {
-        summary.className = "summary ok";
-        summary.innerHTML = `
-          <div style="background: #1e1e1e; border: 1px solid #22c55e; padding: 18px; border-radius: 12px; text-align: center; margin-top: 15px; color: white;">
-            <h3 style="color: #4ade80; margin: 0 0 8px 0; font-size: 18px;">¡Reserva Confirmada! 🎉</h3>
-            <p style="margin: 4px 0; font-size: 14px;"><strong>Turno:</strong> ${state.dia} a las ${state.hora} hs</p>
-            <p style="margin: 4px 0; font-size: 14px;"><strong>Servicio:</strong> ${state.servicio} (${state.precio})</p>
-            <p style="margin: 4px 0; font-size: 12px; color: #aaa;">Código de reserva: <strong>${data.id || 'N/A'}</strong></p>
-            
-            <a href="cancelar.html?id=${encodeURIComponent(data.id || '')}&tel=${encodeURIComponent(state.telefono)}" 
-               style="display: inline-block; margin-top: 14px; padding: 10px 16px; background: #ef444422; border: 1px solid #ef4444; color: #f87171; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold;">
-               ❌ Cancelar o modificar esta reserva
-            </a>
-          </div>
-        `;
-      }
+    
+    if(res.ok) {
+      msgEl.textContent = "¡Turno confirmado con éxito!";
+      msgEl.style.color = "#4ade80";
+      document.querySelector(".field-group").style.display = "none";
     } else {
-      mostrarMensaje(`No se pudo realizar la reserva: ${data.mensaje || "Horario no disponible."}`, "error");
-      
-      if (state.dia) {
-        const btnDiaActual = document.querySelector(`.btn-dia[data-val="${state.dia}"]`);
-        if (btnDiaActual) seleccionarDia(state.dia, btnDiaActual);
-      }
+      throw new Error("Respuesta no válida del servidor");
     }
-  } catch (error) {
-    console.error("Error al enviar reserva:", error);
-    mostrarMensaje("Error de conexión al procesar la reserva. Intentá de nuevo.", "error");
-  } finally {
-    if (btnConfirm) btnConfirm.disabled = false;
-  }
-}
-
-// Función auxiliar para mostrar mensajes sencillos
-function mostrarMensaje(texto, tipo) {
-  const summary = document.getElementById("summary");
-  if (!summary) return;
-  summary.className = `summary ${tipo}`;
-  // Control de desplazamiento por flechas para los días
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("days");
-  const btnLeft = document.getElementById("scroll-left");
-  const btnRight = document.getElementById("scroll-right");
-
-  if (btnLeft && container) {
-    btnLeft.addEventListener("click", () => {
-      container.scrollBy({ left: -120, behavior: 'smooth' });
-    });
-  }
-
-  if (btnRight && container) {
-    btnRight.addEventListener("click", () => {
-      container.scrollBy({ left: 120, behavior: 'smooth' });
-    });
+  } catch(e) {
+    msgEl.textContent = "Error de conexión. Intentá de nuevo.";
+    msgEl.style.color = "var(--danger)";
   }
 });
-  summary.textContent = texto;
-}
