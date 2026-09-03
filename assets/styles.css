@@ -1,376 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-
 :root {
-  --bg: #0a0806;
-  --surface: rgba(14, 11, 9, 0.88); 
-  --text: #ffffff;
-  --text-muted: #a1a1aa;
-  --accent: #d4af37; 
-  --accent-dark: #b5952f;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --radius: 16px;
+  --bg: #111111;
+  --bg-card: #1a1a1a;
+  --text: #f5f5f5;
+  --text-muted: #9fa3a6;
+  --accent: #d4af37; /* Dorado MAV */
+  --accent-hover: #b8952c;
+  --danger: #d93838; /* Rojo Barbería */
 }
 
-* {
-  box-sizing: border-box;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  margin: 0;
   background-color: var(--bg);
-  /* Dejamos solo la textura o el color de fondo, quitamos el fixed */
-  background-image: url('../img/fondo.jpg');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: cover;
   color: var(--text);
-  font-family: 'Montserrat', -apple-system, sans-serif;
-  line-height: 1.5;
-  min-height: 100vh;
-  /* FORZAMOS LA ACELERACIÓN POR HARDWARE GLOBAL */
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.6;
   -webkit-transform: translateZ(0);
 }
+button, input { touch-action: manipulation; font-family: inherit; }
 
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  /* Solo gradiente oscuro, CERO BLUR */
-  background: radial-gradient(circle, rgba(10,8,6,0.5) 0%, rgba(10,8,6,0.9) 100%);
-  z-index: -1;
-}
-
-.wrap {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px 14px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-header {
-  width: 100%;
+/* === VIDRIERA (LANDING) === */
+.hero {
+  background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('../img/fondo.jpg') center/cover;
+  padding: 80px 20px;
   text-align: center;
-  margin-bottom: 16px;
+  border-bottom: 4px solid var(--danger);
+}
+.logo { max-width: 120px; border-radius: 50%; margin-bottom: 20px; }
+.hero h1 { font-size: 32px; font-weight: 800; letter-spacing: 2px; margin-bottom: 5px; }
+.location { color: var(--accent); font-weight: 600; margin-bottom: 30px; }
+.cta-btn {
+  background: var(--danger); color: white; border: none; padding: 15px 30px;
+  font-size: 16px; font-weight: 800; cursor: pointer; border-radius: 4px;
+  transition: 0.2s; text-transform: uppercase;
+}
+.cta-btn:active { transform: scale(0.95); }
+
+.about-section {
+  padding: 50px 20px; max-width: 600px; margin: 0 auto; text-align: center;
+}
+.about-section h2 { color: var(--accent); font-size: 20px; margin-bottom: 15px; }
+.about-section p { color: var(--text-muted); font-size: 15px; }
+
+/* === WIZARD (RESERVAS) === */
+.booking-section { padding: 40px 15px 80px; background: #0a0a0a; }
+.wizard-container {
+  max-width: 500px; margin: 0 auto; background: var(--bg-card);
+  border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.main-logo {
-  width: auto;
-  max-width: 220px;
-  height: auto;
-  max-height: 90px;
-  object-fit: contain;
-  display: inline-block;
-  filter: drop-shadow(0px 4px 12px rgba(0,0,0,0.95));
+.wizard-step { display: none; animation: fadeIn 0.3s ease-out forwards; }
+.wizard-step.active { display: block; }
+.hidden { display: none !important; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.step-title { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; font-size: 18px; }
+
+/* Opciones de Servicio */
+.options-list { display: flex; flex-direction: column; gap: 12px; }
+.opt-list-btn {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #222; border: 1px solid #333; padding: 16px; border-radius: 8px;
+  color: var(--text); cursor: pointer; text-align: left; transition: 0.2s;
 }
+.opt-list-btn.selected { border-color: var(--accent); background: rgba(212,175,55,0.1); }
+.srv-name { display: block; font-weight: 600; font-size: 15px; }
+.srv-desc { display: block; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.srv-price { font-weight: 800; color: var(--accent); }
 
-.card {
-  width: 100%;
-  background: var(--surface);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: var(--radius);
-  padding: 24px 18px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+/* Barberos */
+.agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.agent-card {
+  background: #222; border: 1px solid #333; border-radius: 8px; padding: 20px 10px;
+  color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
+.agent-card.selected { border-color: var(--accent); background: rgba(212,175,55,0.1); }
+.avatar { width: 60px; height: 60px; border-radius: 50%; background: #444; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; color: #888; }
 
-.step-label {
-  font-size: 12px;
-  color: var(--accent);
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+/* Calendario Grid */
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.month-nav { background: none; border: none; color: var(--accent); font-size: 20px; cursor: pointer; padding: 0 15px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 20px; }
+.day-name { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.cal-day { padding: 10px 0; border-radius: 6px; cursor: pointer; font-size: 14px; border: 1px solid transparent; background: #222; }
+.cal-day.disabled { background: transparent; color: #444; cursor: not-allowed; }
+.cal-day.selected { background: var(--accent); color: #000; font-weight: 800; }
+
+/* Horarios por Bloques */
+.time-subtitle { margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+.time-block-label { font-size: 13px; color: var(--text-muted); margin: 15px 0 8px; }
+.time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 8px; }
+.time-btn {
+  background: #222; border: 1px solid #333; color: white; border-radius: 6px; padding: 10px 4px;
+  font-size: 13px; cursor: pointer;
 }
+.time-btn.selected { border-color: var(--accent); background: var(--accent); color: #000; font-weight: 800; }
+.time-btn:disabled { opacity: 0.3; text-decoration: line-through; }
 
-.options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 22px;
-}
+/* Resumen y Formulario */
+.summary-box { background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); margin-bottom: 25px; }
+.summary-box h4 { margin-bottom: 8px; color: var(--accent); }
+.sum-main { font-weight: 600; font-size: 15px; }
+.sum-sub { font-size: 13px; color: var(--text-muted); }
+.sum-price { font-weight: 800; margin-top: 8px; color: var(--danger); }
 
-.day-options {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  margin-bottom: 22px;
-  padding-bottom: 6px;
-  scrollbar-width: none;
-}
+.field-group { display: flex; flex-direction: column; gap: 12px; }
+input { background: #222; border: 1px solid #333; color: white; padding: 15px; border-radius: 6px; font-size: 15px; }
+input:focus { outline: none; border-color: var(--accent); }
 
-.day-options::-webkit-scrollbar { display: none; }
-
-.time-options {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 22px;
-}
-
-.opt-btn {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid #3f3f46;
-  color: var(--text);
-  border-radius: 10px;
-  padding: 12px 4px;
-  font-size: 13px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  /* ELIMINAMOS EL LAG ACÁ: transición más rápida */
-  transition: transform 0.1s ease, border-color 0.1s ease, background 0.1s ease;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul feo en Android */
-}
-
-/* Efecto de hundimiento rápido al hacer tap */
-.opt-btn:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-.opt-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.15);
-}
-
-/* Estilos para las nuevas tarjetas de información */
-.info-card {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.section-title {
-  color: var(--accent);
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.bio-text {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.service-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.service-list li {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.5;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  padding-bottom: 8px;
-}
-
-.service-list li strong {
-  color: var(--text);
-  display: block;
-  margin-bottom: 2px;
-}
-.opt-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.15);
-}
-
-.opt-btn.selected {
-  border-color: var(--accent);
-  background: rgba(212, 175, 55, 0.28);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
-}
-
-.opt-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.opt-btn .price {
-  font-size: 11px;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.day-options .opt-btn {
-  flex: 0 0 auto;
-  min-width: 60px;
-  padding: 10px;
-}
-
-.day-options .day-name {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.day-options .day-num {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 22px;
-}
-
-input[type="text"],
-input[type="tel"],
-input[type="email"] {
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid #3f3f46;
-  color: var(--text);
-  border-radius: 10px;
-  padding: 14px;
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-  transition: border-color 0.2s ease;
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: rgba(0, 0, 0, 0.9);
-}
-
-button.confirm {
-  width: 100%;
-  background: var(--accent);
-  color: #000;
-  border: none;
-  padding: 16px;
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button.confirm:hover {
-  background: var(--accent-dark);
-  color: #fff;
-}
-
-.summary {
-  font-size: 13px;
-  text-align: center;
-  margin: 16px 0 0;
-  min-height: 18px;
-}
-
-.summary.error { color: var(--danger); }
-.summary.ok { color: var(--success); }
-
-.wpp-contact {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  text-align: center;
-}
-
-.wpp-contact p {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0 0 6px 0;
-}
-
-.wpp-link {
-  display: inline-block;
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 2px;
-}
-
-/* Adaptación para pantallas de Celular */
-@media (max-width: 480px) {
-  body {
-    /* En celulares encuadra el poste a la izquierda y el sillón a la derecha */
-    background-size: 50% cover, 50% cover;
-  }
-
-  .options {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .options .opt-btn {
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 14px 16px;
-  }
-
-  .time-options {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-/* Contenedor del selector de días con soporte para flechas de desplazamiento */
-.day-options-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 22px;
-  position: relative;
-}
-
-.day-options {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  width: 100%;
-  padding-bottom: 6px;
-  scrollbar-width: none; /* Oculta barra en Firefox */
-}
-
-.day-options::-webkit-scrollbar {
-  display: none; /* Oculta barra en Chrome/Safari */
-}
-
-/* Flechas laterales para mover los días en desktop o pantallas grandes */
-.scroll-arrow {
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid #3f3f46;
-  color: var(--accent);
-  border-radius: 8px;
-  width: 32px;
-  height: 48px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.2s;
-}
-
-.scroll-arrow:hover {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: var(--accent);
-}
-
-@media (max-width: 480px) {
-  /* En celulares ocultamos las flechas porque el dedo scrollea fluido deslizando */
-  .scroll-arrow {
-    display: none;
-  }
-}
+/* Footer del Wizard */
+.wizard-footer { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 15px; border-top: 1px solid #333; }
+.btn-back { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 10px 0; }
+.btn-next, .confirm { background: none; border: none; color: var(--accent); font-weight: 800; font-size: 16px; cursor: pointer; }
+.btn-next:disabled { color: #555; }
+.confirm { color: var(--danger); }
+.summary-msg { text-align: center; margin-top: 15px; font-weight: 600; }
