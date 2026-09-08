@@ -3,86 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plantilla Universal PyMEs - Reservas</title>
+    <title>MAV Barber Studio - Reservas</title>
     
-    <!-- 1. ACÁ INYECTAMOS TAILWIND DESDE INTERNET -->
+    <!-- 1. INYECTAMOS TAILWIND -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. CONFIGURAMOS TUS COLORES PERSONALIZADOS -->
+    <!-- 2. CONFIGURACIÓN DE COLORES (Estética Dark App) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        appBg: '#0f1015',      /* Fondo súper oscuro */
-                        cardBg: '#181921',     /* Fondo de las tarjetas */
-                        accent: '#8b5cf6',     /* Tu violeta principal */
-                        textMuted: '#8a8a98'   /* Textos secundarios */
+                        appBg: '#0a0a0f',      /* Fondo negro profundo */
+                        cardBg: '#12121a',     /* Fondo tarjetas */
+                        accent: '#8b5cf6',     /* Violeta moderno */
+                        textMuted: '#8a8a98',  /* Gris para textos secundarios */
+                        borderColor: 'rgba(255,255,255,0.08)'
                     }
                 }
             }
         }
     </script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Inter', sans-serif; } </style>
+    <!-- 3. FUENTE Y ESTILOS EXTRA (Ocultar scrollbar) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animación suave al cambiar de paso */
+        .step-container { transition: opacity 0.3s ease-in-out; }
+        .hidden-step { display: none; opacity: 0; }
+        .active-step { display: block; opacity: 1; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="bg-appBg text-white min-h-screen">
+<body class="bg-appBg text-white min-h-screen pb-28">
 
-    <!-- CABECERA -->
-    <header class="flex justify-between items-center p-6 border-b border-gray-800">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gray-900 border border-gray-700 rounded-full flex items-center justify-center font-bold">
-                LOGO
+    <!-- HEADER FIJO -->
+    <header class="flex justify-between items-center p-5 border-b border-borderColor sticky top-0 bg-appBg/90 backdrop-blur-md z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full border border-borderColor flex items-center justify-center font-bold text-xs bg-cardBg">
+                MAV
             </div>
             <div>
-                <h2 class="font-bold text-lg leading-tight">Nombre_PyME</h2>
-                <span class="text-xs text-textMuted tracking-widest">RESERVAS ONLINE</span>
+                <h2 class="font-bold text-sm leading-tight">MAV Barber Studio</h2>
+                <span class="text-[10px] text-textMuted tracking-widest uppercase">Reservas Online</span>
             </div>
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-3xl mx-auto p-6 mt-6">
+    <!-- CONTENEDOR CENTRAL -->
+    <main class="max-w-xl mx-auto p-5 mt-4">
         
-        <!-- BARRA DE PROGRESO (STEPPER) -->
-        <div class="flex items-center justify-center gap-4 mb-10">
+        <!-- STEPPER (Barra de progreso) -->
+        <div class="flex items-center justify-center mb-10">
             <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold">✓</div>
-                <span class="text-[10px] font-bold text-accent tracking-wider">BARBERO</span>
+                <div id="dot-1" class="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-sm font-bold shadow-[0_0_10px_rgba(139,92,246,0.5)]">1</div>
+                <span class="text-[9px] font-bold text-accent tracking-wider">BARBERO</span>
             </div>
-            <div class="w-12 h-px bg-gray-700 mb-5"></div>
+            <div class="w-12 h-px bg-borderColor mb-5 mx-2"></div>
             <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full border border-textMuted text-textMuted flex items-center justify-center text-sm font-bold">2</div>
-                <span class="text-[10px] font-bold text-textMuted tracking-wider">FECHA</span>
+                <div id="dot-2" class="w-8 h-8 rounded-full border border-textMuted text-textMuted flex items-center justify-center text-sm font-bold bg-cardBg">2</div>
+                <span id="text-2" class="text-[9px] font-bold text-textMuted tracking-wider">FECHA</span>
             </div>
-            <div class="w-12 h-px bg-gray-700 mb-5"></div>
+            <div class="w-12 h-px bg-borderColor mb-5 mx-2"></div>
             <div class="flex flex-col items-center gap-2">
-                <div class="w-8 h-8 rounded-full border border-textMuted text-textMuted flex items-center justify-center text-sm font-bold">3</div>
-                <span class="text-[10px] font-bold text-textMuted tracking-wider">DATOS</span>
+                <div id="dot-3" class="w-8 h-8 rounded-full border border-textMuted text-textMuted flex items-center justify-center text-sm font-bold bg-cardBg">3</div>
+                <span id="text-3" class="text-[9px] font-bold text-textMuted tracking-wider">DATOS</span>
             </div>
         </div>
 
-        <!-- TARJETA DEL PROFESIONAL -->
-        <div class="bg-cardBg border border-gray-800 rounded-2xl p-8 transition hover:border-gray-700 cursor-pointer">
-            <div class="flex items-center gap-4 mb-6">
-                <img src="https://ui-avatars.com/api/?name=Facu+Colito&background=222&color=fff" class="w-12 h-12 rounded-lg">
-                <h3 class="font-bold text-xl">Facu (Colito)</h3>
-            </div>
-            
-            <!-- LISTA DE SERVICIOS ADENTRO DE LA TARJETA -->
-            <div class="flex flex-col gap-3">
-                <div class="flex justify-between items-center p-4 rounded-xl border border-gray-800 hover:bg-gray-800/50 transition">
-                    <div>
-                        <h4 class="font-semibold text-lg">Corte</h4>
-                        <span class="text-sm text-textMuted">30 min</span>
-                    </div>
-                    <span class="font-bold text-accent text-lg">$14.000</span>
+        <!-- ==========================================
+             PASO 1: PROFESIONAL Y SERVICIO
+             ========================================== -->
+        <section id="paso-1" class="step-container active-step">
+            <h1 class="text-3xl font-extrabold mb-1 tracking-tight">Elegí tu <span class="text-accent">profesional</span></h1>
+            <p class="text-textMuted mb-8">Seleccioná el servicio que querés reservar</p>
+
+            <!-- Tarjeta Barbero -->
+            <div class="bg-cardBg border border-borderColor rounded-2xl p-5 mb-6">
+                <div class="flex items-center gap-4 mb-5">
+                    <img src="https://ui-avatars.com/api/?name=Mauritto&background=222&color=fff" class="w-12 h-12 rounded-xl object-cover">
+                    <h3 class="font-bold text-lg">Mauritto</h3>
+                </div>
+                
+                <!-- Opciones de servicio -->
+                <div class="flex flex-col gap-3">
+                    <button class="servicio-btn flex justify-between items-center p-4 rounded-xl border border-borderColor bg-appBg/50 hover:border-accent transition text-left" onclick="seleccionarServicio(this)">
+                        <div>
+                            <h4 class="font-bold text-base">Corte Clásico</h4>
+                            <span class="text-xs text-textMuted">40 min</span>
+                        </div>
+                        <span class="font-bold text-accent text-lg">$12.000</span>
+                    </button>
+
+                    <button class="servicio-btn flex justify-between items-center p-4 rounded-xl border border-borderColor bg-appBg/50 hover:border-accent transition text-left" onclick="seleccionarServicio(this)">
+                        <div>
+                            <h4 class="font-bold text-base">Corte + Barba Premium</h4>
+                            <span class="text-xs text-textMuted">60 min</span>
+                        </div>
+                        <span class="font-bold text-accent text-lg">$16.000</span>
+                    </button>
                 </div>
             </div>
-        </div>
+        </section>
+
+
+        <!-- ==========================================
+             PASO 2: FECHA Y HORA
+             ========================================== -->
+        <section id="paso-2" class="step-container hidden-step">
+            <h1 class="text-3xl font-extrabold mb-1 tracking-tight">Elegí fecha y hora</h1>
+            <p class="text-textMuted mb-8">Seleccioná cuándo querés venir</p>
+
+            <!-- Tarjeta resumen miniatura -->
+            <div class="bg-cardBg border border-accent/40 rounded-xl p-4 flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-xs">✂️</div>
+                    <div>
+                        <h4 class="font-bold text-sm leading-none" id="resumen-servicio">Corte Clásico</h4>
+                        <span class="text-[10px] text-textMuted">con Mauritto</span>
+                    </div>
+                </div>
+                <span class="font-bold text-accent text-sm" id="resumen-precio">$12.000</span>
+            </div>
+
+            <h5 class="text-xs font-bold text-textMuted tracking-widest mb-4">SEPTIEMBRE</h5>
+            
+            <!-- Carrusel de Fechas -->
+            <div class="flex space-x-3 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
+                    <span class="text-[10px] uppercase text-textMuted font-bold">Mar</span>
+                    <span class="text-2xl font-extrabold mt-1">8</span>
+                </button>
+                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
+                    <span class="text-[10px] uppercase text-textMuted font-bold">Mié</span>
+                    <span class="text-2xl font-extrabold mt-1">9</span>
+                </button>
+                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
+                    <span class="text-[10px] uppercase text-textMuted font-bold">Jue</span>
+                    <span class="text-2xl font-extrabold mt-1">10</span>
+                </button>
+                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
+                    <span class="text-[10px] uppercase text-textMuted font-bold">Vie</span>
+                    <span class="text-2xl font-extrabold mt-1">11</span>
+                </button>
+            </div>
+
+            <h5 class="text-xs font-bold text-textMuted tracking-widest mb-4">HORARIOS</h5>
+            <!-- Grilla de Horas -->
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <button class="hora-btn bg-cardBg border border-borderColor rounded-xl py-3 text-sm font-semibold hover:border-accent transition" onclick="seleccionarHora(this)">10:00</button>
+                <button class="hora-btn bg-cardBg border border-borderColor rounded-xl py-3 text-sm font-semibold hover:border-accent transition" onclick="seleccionarHora(this)">10:30</button>
+                <button class="hora-btn bg-cardBg border border-borderColor rounded-xl py-3 text-sm font-semibold hover:border-accent transition" onclick="seleccionarHora(this)">11:00</button>
+                <button class="bg-appBg border border-borderColor/30 text-gray-600 rounded-xl py-3 text-sm font-semibold line-through cursor-not-allowed">11:30</button>
+                <button class="hora-btn bg-cardBg border border-borderColor rounded-xl py-3 text-sm font-semibold hover:border-accent transition" onclick="seleccionarHora(this)">12:00</button>
+                <button class="hora-btn bg-cardBg border border-borderColor rounded-xl py-3 text-sm font-semibold hover:border-accent transition" onclick="seleccionarHora(this)">12:30</button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             PASO 3: DATOS DEL CLIENTE
+             ========================================== -->
+        <section id="paso-3" class="step-container hidden-step">
+            <h1 class="text-3xl font-extrabold mb-1 tracking-tight">Tus datos</h1>
+            <p class="text-textMuted mb-8">Completá para confirmar la reserva</p>
+
+            <!-- Info elegida -->
+            <div class="flex gap-4 text-sm font-semibold text-gray-300 border-t border-dashed border-borderColor pt-4 mt-[-10px] mb-8">
+                <span id="resumen-fecha">📅 --</span>
+                <span id="resumen-hora">🕒 -- hs</span>
+            </div>
+
+            <!-- Formulario -->
+            <div class="flex flex-col gap-5">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-textMuted tracking-widest">NOMBRE Y APELLIDO *</label>
+                    <input type="text" id="cliente-nombre" class="bg-cardBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-accent transition" placeholder="Juan Pérez">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-textMuted tracking-widest">EMAIL *</label>
+                    <input type="email" id="cliente-email" class="bg-cardBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-accent transition" placeholder="juan@email.com">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-textMuted tracking-widest">TELÉFONO *</label>
+                    <div class="flex bg-cardBg border border-borderColor rounded-xl overflow-hidden focus-within:border-accent transition">
+                        <span class="p-4 bg-appBg text-textMuted font-bold border-r border-borderColor">+54</span>
+                        <input type="tel" id="cliente-telefono" class="bg-transparent p-4 text-white outline-none w-full" placeholder="341 610 6595">
+                    </div>
+                </div>
+            </div>
+        </section>
 
     </main>
 
+    <!-- BARRA FLOTANTE DE BOTONES -->
+    <div class="fixed bottom-0 left-0 w-full p-4 bg-appBg/90 backdrop-blur-md border-t border-borderColor z-20">
+        <div class="max-w-xl mx-auto flex gap-3">
+            <button id="btn-atras" class="hidden px-6 py-4 rounded-xl border border-borderColor text-textMuted font-bold hover:bg-cardBg transition" onclick="irAtras()">
+                ← Atrás
+            </button>
+            <button id="btn-siguiente" class="w-full bg-accent text-white font-extrabold text-lg py-4 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.4)] opacity-50 cursor-not-allowed transition" disabled onclick="irSiguiente()">
+                Siguiente
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN Y SELECCIÓN -->
+    <script>
+        let pasoActual = 1;
+        let reserva = { servicio: '', precio: '', fecha: '', hora: '' };
+
+        // DOM Elements
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const btnAtras = document.getElementById('btn-atras');
+
+        // Función 1: Seleccionar Servicio
+        function seleccionarServicio(btn) {
+            document.querySelectorAll('.servicio-btn').forEach(b => {
+                b.classList.remove('border-accent', 'bg-accent/10');
+                b.classList.add('border-borderColor');
+            });
+            btn.classList.remove('border-borderColor');
+            btn.classList.add('border-accent', 'bg-accent/10');
+            
+            reserva.servicio = btn.querySelector('h4').innerText;
+            reserva.precio = btn.querySelector('.text-accent').innerText;
+            
+            // Actualizamos los textos para el paso 2
+            document.getElementById('resumen-servicio').innerText = reserva.servicio;
+            document.getElementById('resumen-precio').innerText = reserva.precio;
+            
+            activarBotonSiguiente();
+        }
+
+        // Función 2: Seleccionar Fecha
+        function seleccionarFecha(btn) {
+            document.querySelectorAll('.fecha-btn').forEach(b => {
+                b.classList.remove('border-accent', 'bg-accent');
+                b.classList.add('border-borderColor', 'bg-cardBg');
+            });
+            btn.classList.remove('border-borderColor', 'bg-cardBg');
+            btn.classList.add('border-accent', 'bg-accent');
+            
+            reserva.fecha = btn.innerText.replace('\n', ' ');
+            document.getElementById('resumen-fecha').innerText = `📅 ` + reserva.fecha;
+            chequearPaso2();
+        }
+
+        // Función 3: Seleccionar Hora
+        function seleccionarHora(btn) {
+            document.querySelectorAll('.hora-btn').forEach(b => {
+                b.classList.remove('border-accent', 'bg-accent');
+                b.classList.add('border-borderColor', 'bg-cardBg');
+            });
+            btn.classList.remove('border-borderColor', 'bg-cardBg');
+            btn.classList.add('border-accent', 'bg-accent');
+            
+            reserva.hora = btn.innerText;
+            document.getElementById('resumen-hora').innerText = `🕒 ` + reserva.hora + ` hs`;
+            chequearPaso2();
+        }
+
+        function chequearPaso2() {
+            if (reserva.fecha !== '' && reserva.hora !== '') activarBotonSiguiente();
+        }
+
+        function activarBotonSiguiente() {
+            btnSiguiente.disabled = false;
+            btnSiguiente.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function desactivarBotonSiguiente() {
+            btnSiguiente.disabled = true;
+            btnSiguiente.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        // Función Navegación
+        function irSiguiente() {
+            if (pasoActual === 1) {
+                document.getElementById('paso-1').classList.replace('active-step', 'hidden-step');
+                document.getElementById('paso-2').classList.replace('hidden-step', 'active-step');
+                
+                // Actualizar Stepper visual
+                document.getElementById('dot-2').classList.replace('bg-cardBg', 'bg-accent');
+                document.getElementById('dot-2').classList.replace('border-textMuted', 'border-accent');
+                document.getElementById('dot-2').classList.add('text-white');
+                document.getElementById('text-2').classList.replace('text-textMuted', 'text-accent');
+                
+                btnAtras.classList.remove('hidden');
+                desactivarBotonSiguiente(); // Espera a que elija fecha y hora
+                pasoActual++;
+                
+            } else if (pasoActual === 2) {
+                document.getElementById('paso-2').classList.replace('active-step', 'hidden-step');
+                document.getElementById('paso-3').classList.replace('hidden-step', 'active-step');
+                
+                // Actualizar Stepper visual
+                document.getElementById('dot-3').classList.replace('bg-cardBg', 'bg-accent');
+                document.getElementById('dot-3').classList.replace('border-textMuted', 'border-accent');
+                document.getElementById('dot-3').classList.add('text-white');
+                document.getElementById('text-3').classList.replace('text-textMuted', 'text-accent');
+                
+                btnSiguiente.innerText = "Confirmar Turno";
+                activarBotonSiguiente(); // Acá el botón Confirmar está libre, faltaría la validación final
+                pasoActual++;
+                
+            } else if (pasoActual === 3) {
+                // ACÁ ENTRA TU CÓDIGO VIEJO DE N8N (EL FETCH)
+                alert("¡Acá es donde conectamos el fetch de n8n para enviar los datos: " + reserva.servicio + " el " + reserva.fecha + " a las " + reserva.hora + "!");
+            }
+        }
+
+        function irAtras() {
+            if (pasoActual === 2) {
+                document.getElementById('paso-2').classList.replace('active-step', 'hidden-step');
+                document.getElementById('paso-1').classList.replace('hidden-step', 'active-step');
+                
+                // Apagar Stepper
+                document.getElementById('dot-2').classList.replace('bg-accent', 'bg-cardBg');
+                document.getElementById('dot-2').classList.replace('border-accent', 'border-textMuted');
+                document.getElementById('dot-2').classList.remove('text-white');
+                document.getElementById('text-2').classList.replace('text-accent', 'text-textMuted');
+                
+                btnAtras.classList.add('hidden');
+                activarBotonSiguiente(); // Porque ya eligió servicio antes
+                pasoActual--;
+                
+            } else if (pasoActual === 3) {
+                document.getElementById('paso-3').classList.replace('active-step', 'hidden-step');
+                document.getElementById('paso-2').classList.replace('hidden-step', 'active-step');
+                
+                // Apagar Stepper
+                document.getElementById('dot-3').classList.replace('bg-accent', 'bg-cardBg');
+                document.getElementById('dot-3').classList.replace('border-accent', 'border-textMuted');
+                document.getElementById('dot-3').classList.remove('text-white');
+                document.getElementById('text-3').classList.replace('text-accent', 'text-textMuted');
+                
+                btnSiguiente.innerText = "Siguiente";
+                activarBotonSiguiente();
+                pasoActual--;
+            }
+        }
+    </script>
 </body>
 </html>
