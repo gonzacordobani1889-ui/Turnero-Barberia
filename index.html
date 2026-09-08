@@ -214,7 +214,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE NAVEGACIÓN Y SELECCIÓN -->
+   <!-- SCRIPT DE NAVEGACIÓN, SELECCIÓN Y CONEXIÓN CON N8N -->
     <script>
         let pasoActual = 1;
         let reserva = { servicio: '', precio: '', fecha: '', hora: '' };
@@ -235,7 +235,6 @@
             reserva.servicio = btn.querySelector('h4').innerText;
             reserva.precio = btn.querySelector('.text-accent').innerText;
             
-            // Actualizamos los textos para el paso 2
             document.getElementById('resumen-servicio').innerText = reserva.servicio;
             document.getElementById('resumen-precio').innerText = reserva.precio;
             
@@ -284,39 +283,112 @@
             btnSiguiente.classList.add('opacity-50', 'cursor-not-allowed');
         }
 
-        // Función Navegación
+        // Función Navegación y Envío a n8n
         function irSiguiente() {
             if (pasoActual === 1) {
                 document.getElementById('paso-1').classList.replace('active-step', 'hidden-step');
                 document.getElementById('paso-2').classList.replace('hidden-step', 'active-step');
                 
-                // Actualizar Stepper visual
                 document.getElementById('dot-2').classList.replace('bg-cardBg', 'bg-accent');
                 document.getElementById('dot-2').classList.replace('border-textMuted', 'border-accent');
                 document.getElementById('dot-2').classList.add('text-white');
                 document.getElementById('text-2').classList.replace('text-textMuted', 'text-accent');
                 
                 btnAtras.classList.remove('hidden');
-                desactivarBotonSiguiente(); // Espera a que elija fecha y hora
+                desactivarBotonSiguiente(); 
                 pasoActual++;
                 
             } else if (pasoActual === 2) {
                 document.getElementById('paso-2').classList.replace('active-step', 'hidden-step');
                 document.getElementById('paso-3').classList.replace('hidden-step', 'active-step');
                 
-                // Actualizar Stepper visual
                 document.getElementById('dot-3').classList.replace('bg-cardBg', 'bg-accent');
                 document.getElementById('dot-3').classList.replace('border-textMuted', 'border-accent');
                 document.getElementById('dot-3').classList.add('text-white');
                 document.getElementById('text-3').classList.replace('text-textMuted', 'text-accent');
                 
                 btnSiguiente.innerText = "Confirmar Turno";
-                activarBotonSiguiente(); // Acá el botón Confirmar está libre, faltaría la validación final
+                activarBotonSiguiente(); 
                 pasoActual++;
                 
             } else if (pasoActual === 3) {
-                // ACÁ ENTRA TU CÓDIGO VIEJO DE N8N (EL FETCH)
-                alert("¡Acá es donde conectamos el fetch de n8n para enviar los datos: " + reserva.servicio + " el " + reserva.fecha + " a las " + reserva.hora + "!");
+                // ===============================================
+                // BLOQUE DE CONEXIÓN A N8N (EL CEREBRO DEL TURNERO)
+                // ===============================================
+                
+                // 1. Capturamos los datos del formulario
+                const nombre = document.getElementById('cliente-nombre').value.trim();
+                const email = document.getElementById('cliente-email').value.trim();
+                const telefono = document.getElementById('cliente-telefono').value.trim();
+                
+                // 2. Validamos que no haya trampas
+                if (nombre === '' || email === '' || telefono === '') {
+                    alert('Por favor, completá tu Nombre, Email y Teléfono para confirmar.');
+                    return;
+                }
+
+                // 3. Cambiamos la interfaz a "Procesando"
+                btnSiguiente.innerText = "Procesando...";
+                desactivarBotonSiguiente();
+                btnAtras.classList.add('hidden'); // Ocultamos atrás para evitar dobles envíos
+
+                // 4. Armamos el JSON exacto que espera n8n
+                const datosTurno = {
+                    nombre: nombre,
+                    telefono: telefono,
+                    mail: email,
+                    servicio: reserva.servicio,
+                    precio: reserva.precio,
+                    dia: reserva.fecha,
+                    hora: reserva.hora
+                };
+
+                // 5. TU URL DE N8N (Acordate: podés sumarle -test para probar en pantalla)
+                const webhookUrl = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno'; 
+
+                // 6. El disparo de datos
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosTurno)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.ok === true) {
+                        // ÉXITO TOTAL: Desaparecemos el formulario y mostramos mensaje premium
+                        document.getElementById('paso-3').innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.2)]">✓</div>
+                                <h1 class="text-3xl font-extrabold mb-3 text-white tracking-tight">¡Listo, ${nombre}!</h1>
+                                <p class="text-textMuted mb-2 text-lg">Tu turno quedó confirmado para el <strong class="text-white">${reserva.fecha}</strong> a las <strong class="text-white">${reserva.hora} hs</strong>.</p>
+                                <p class="text-sm text-gray-500">Ya te enviamos los detalles a ${email}</p>
+                            </div>
+                        `;
+                        
+                        // Ponemos el botón verde de "Finalizado"
+                        btnSiguiente.innerText = "Volver al inicio";
+                        btnSiguiente.classList.replace('bg-accent', 'bg-green-500');
+                        btnSiguiente.classList.replace('shadow-[0_0_15px_rgba(139,92,246,0.4)]', 'shadow-[0_0_15px_rgba(34,197,94,0.4)]');
+                        activarBotonSiguiente();
+                        
+                        // Si hace clic en "Volver al inicio", recarga la página
+                        btnSiguiente.onclick = function() { window.location.reload(); };
+
+                    } else {
+                        // RECHAZO DE N8N (Ej: horario ocupado)
+                        alert("Aviso: " + data.mensaje);
+                        btnSiguiente.innerText = "Confirmar Turno";
+                        activarBotonSiguiente();
+                        btnAtras.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al conectar con n8n:', error);
+                    alert("Tuvimos un problema de conexión. Por favor intentá de nuevo.");
+                    btnSiguiente.innerText = "Confirmar Turno";
+                    activarBotonSiguiente();
+                    btnAtras.classList.remove('hidden');
+                });
             }
         }
 
@@ -325,21 +397,19 @@
                 document.getElementById('paso-2').classList.replace('active-step', 'hidden-step');
                 document.getElementById('paso-1').classList.replace('hidden-step', 'active-step');
                 
-                // Apagar Stepper
                 document.getElementById('dot-2').classList.replace('bg-accent', 'bg-cardBg');
                 document.getElementById('dot-2').classList.replace('border-accent', 'border-textMuted');
                 document.getElementById('dot-2').classList.remove('text-white');
                 document.getElementById('text-2').classList.replace('text-accent', 'text-textMuted');
                 
                 btnAtras.classList.add('hidden');
-                activarBotonSiguiente(); // Porque ya eligió servicio antes
+                activarBotonSiguiente(); 
                 pasoActual--;
                 
             } else if (pasoActual === 3) {
                 document.getElementById('paso-3').classList.replace('active-step', 'hidden-step');
                 document.getElementById('paso-2').classList.replace('hidden-step', 'active-step');
                 
-                // Apagar Stepper
                 document.getElementById('dot-3').classList.replace('bg-accent', 'bg-cardBg');
                 document.getElementById('dot-3').classList.replace('border-accent', 'border-textMuted');
                 document.getElementById('dot-3').classList.remove('text-white');
