@@ -347,7 +347,58 @@
             reserva.fechaIsoExacta = fechaISO; 
             
             console.log("Fecha seleccionada para n8n:", reserva.fechaIsoExacta);
+            chequearDisponibilidad(textoPantalla);
             chequearPaso2();
+        }
+        // Función que consulta a n8n y tacha los horarios
+        async function chequearDisponibilidad(diaBuscado) {
+            const botonesHora = document.querySelectorAll('.hora-btn');
+            
+            // 1. Apagamos todos los horarios y ponemos opacidad mientras carga
+            botonesHora.forEach(b => {
+                b.disabled = true;
+                b.classList.add('opacity-50', 'cursor-wait');
+                b.classList.remove('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed', 'border-accent', 'bg-accent'); // Limpiamos estilos viejos
+                b.classList.add('bg-cardBg', 'border-borderColor');
+            });
+
+            // Reseteamos la hora elegida previamente si cambia de día
+            reserva.hora = '';
+            document.getElementById('resumen-hora').innerText = `🕒 -- hs`;
+            desactivarBotonSiguiente();
+
+            try {
+                // 2. Le preguntamos a tu n8n por los ocupados (Usamos tu webhook)
+                const urlGet = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno';
+                const respuesta = await fetch(`${urlGet}?dia=${encodeURIComponent(diaBuscado)}`);
+                const data = await respuesta.json();
+                
+                const ocupados = data.ocupados || []; // Viene de n8n: ["10:30", "12:00"]
+
+                // 3. Volvemos a prender los botones, tachando los que están ocupados
+                botonesHora.forEach(b => {
+                    const horaBoton = b.innerText.trim();
+                    b.classList.remove('opacity-50', 'cursor-wait'); // Sacamos modo carga
+
+                    if (ocupados.includes(horaBoton)) {
+                        // Está OCUPADO: Lo tachamos estilo App
+                        b.disabled = true;
+                        b.classList.add('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed');
+                        b.classList.remove('bg-cardBg', 'hover:border-accent');
+                    } else {
+                        // Está LIBRE: Lo habilitamos para hacer clic
+                        b.disabled = false;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al consultar disponibilidad:", error);
+                // Si falla internet, prendemos todo por las dudas
+                botonesHora.forEach(b => {
+                    b.disabled = false;
+                    b.classList.remove('opacity-50', 'cursor-wait');
+                });
+            }
         }
 
         // Arrancamos el motor visual al cargar la página
