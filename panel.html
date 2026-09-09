@@ -1,63 +1,318 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Barbero — Barbería Cordobani</title>
-  <link rel="stylesheet" href="assets/styles.css" />
-  <style>
-    .admin-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
-    .admin-card.cancelado { border-left-color: var(--danger); opacity: 0.6; }
-    .badge { background: #3a3733; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-muted); }
-    .badge-ok { background: rgba(74, 122, 94, 0.3); color: #6bc98e; }
-    .badge-warn { background: rgba(168, 54, 46, 0.3); color: #f87171; }
-    .card-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .btn-action { flex: 1; padding: 8px; font-size: 12px; border-radius: 6px; border: 1px solid #3a3733; background: var(--bg); color: var(--text); cursor: pointer; }
-    .btn-action:hover { border-color: var(--accent); }
-    .btn-danger { color: #f87171; }
-    .btn-danger:hover { background: rgba(168, 54, 46, 0.2); }
-    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; text-align: center; }
-    .stat-box { background: var(--surface); padding: 12px; border-radius: 8px; }
-    .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); }
-    .stat-label { font-size: 11px; color: var(--text-muted); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Mauritto - Barbería</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        appBg: '#0a0a0f',
+                        cardBg: '#12121a',
+                        accent: '#8b5cf6',
+                        danger: '#ef4444',
+                        success: '#22c55e',
+                        textMuted: '#8a8a98',
+                        borderColor: 'rgba(255,255,255,0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="logo">✂️ Agenda Barbero</div>
-      <p>Gestión de turnos y avisos</p>
+<body class="bg-appBg text-white min-h-screen">
+
+    <!-- MODAL DE LOGIN -->
+    <div id="login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-cardBg border border-borderColor p-8 rounded-2xl w-[90%] max-w-sm text-center shadow-2xl">
+            <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center text-3xl mx-auto mb-4">🔐</div>
+            <h2 class="text-2xl font-bold mb-1 text-white">Panel Barbero</h2>
+            <p class="text-textMuted text-sm mb-6">Ingresá tus credenciales</p>
+            
+            <input type="text" id="auth-user" placeholder="Usuario" class="w-full bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-accent transition mb-3">
+            <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-accent transition mb-6">
+            
+            <button id="btn-login" onclick="ejecutarLogin()" class="w-full bg-accent text-white font-bold text-lg py-4 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:bg-violet-600 transition">
+                Ingresar
+            </button>
+            <p id="login-error" class="hidden text-danger text-xs mt-4 font-semibold"></p>
+        </div>
+    </div>
+
+    <!-- HEADER PANEL -->
+    <header class="flex justify-between items-center p-5 border-b border-borderColor bg-appBg/90 sticky top-0 z-10 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-bold text-xs shadow-[0_0_10px_rgba(139,92,246,0.5)]">
+                MAV
+            </div>
+            <div>
+                <h2 class="font-bold text-sm leading-tight">Control de Turnos</h2>
+                <span class="text-[10px] text-textMuted tracking-widest uppercase" id="estado-conexion">Conectado</span>
+            </div>
+        </div>
+        <button onclick="cerrarSesion()" class="text-xs font-bold text-danger bg-danger/10 px-3 py-1 rounded-lg">Salir</button>
     </header>
 
-    <!-- Filtro de Fecha -->
-    <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
-      <label style="font-size: 13px; color: var(--text-muted);">Fecha:</label>
-      <input type="date" id="filtro-fecha" style="flex: 1;" />
-      <button class="confirm" id="btn-cargar" style="width: auto; padding: 8px 16px; font-size: 13px;">Cargar</button>
-    </div>
+    <main class="max-w-xl mx-auto p-5">
+        
+        <!-- FILTRO DE FECHA -->
+        <div class="bg-cardBg border border-borderColor rounded-xl p-4 mb-6 flex gap-3 items-center">
+            <div class="flex-1">
+                <label class="text-[10px] font-bold text-textMuted tracking-widest block mb-1">FECHA A CONSULTAR</label>
+                <input type="date" id="filtro-fecha" class="w-full bg-appBg border border-borderColor rounded-lg p-2 text-sm text-white outline-none focus:border-accent">
+            </div>
+            <button onclick="cargarAgenda()" class="bg-white text-appBg font-bold px-5 py-2.5 rounded-lg h-fit hover:bg-gray-200 transition mt-4">
+                Cargar
+            </button>
+        </div>
 
-    <!-- Barra de Métricas Rápidas -->
-    <div class="stats-bar">
-      <div class="stat-box">
-        <div class="stat-num" id="stat-total">0</div>
-        <div class="stat-label">Turnos</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num" id="stat-caja">$0</div>
-        <div class="stat-label">Estimado</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num" id="stat-cancelados">0</div>
-        <div class="stat-label">Cancelados</div>
-      </div>
-    </div>
+        <!-- MÉTRICAS -->
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="bg-cardBg border border-borderColor rounded-xl p-4 text-center">
+                <div id="stat-total" class="text-2xl font-extrabold text-white">0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">TURNOS</div>
+            </div>
+            <div class="bg-cardBg border border-borderColor rounded-xl p-4 text-center">
+                <div id="stat-caja" class="text-2xl font-extrabold text-success">$0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">CAJA EST.</div>
+            </div>
+            <div class="bg-cardBg border border-borderColor rounded-xl p-4 text-center">
+                <div id="stat-cancelados" class="text-2xl font-extrabold text-danger">0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">BAJAS</div>
+            </div>
+        </div>
 
-    <!-- Lista de Turnos -->
-    <div id="lista-turnos">
-      <p style="text-align: center; color: var(--text-muted);">Seleccioná una fecha para ver la agenda.</p>
-    </div>
-  </div>
+        <!-- LISTA DE TURNOS -->
+        <h3 class="text-sm font-bold text-textMuted tracking-widest mb-4">AGENDA DEL DÍA</h3>
+        <div id="lista-turnos" class="flex flex-col gap-4 pb-12">
+            <p class="text-center text-textMuted text-sm py-10">Cargando turnos...</p>
+        </div>
 
-  <script src="assets/admin.js"></script>
+    </main>
+
+    <script>
+        const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
+
+        // Inicialización
+        document.addEventListener("DOMContentLoaded", () => {
+            const hoy = new Date();
+            hoy.setHours(hoy.getHours() - 3);
+            document.getElementById("filtro-fecha").value = hoy.toISOString().split("T")[0];
+
+            if (sessionStorage.getItem("barbero_user") && sessionStorage.getItem("barbero_pass")) {
+                document.getElementById("login-modal").classList.add("hidden");
+                cargarAgenda();
+            } else {
+                document.getElementById("login-modal").classList.remove("hidden");
+            }
+        });
+
+        // Login
+        async function ejecutarLogin() {
+            const user = document.getElementById("auth-user").value.trim();
+            const pass = document.getElementById("auth-pass").value.trim();
+            const errorLbl = document.getElementById("login-error");
+
+            if (!user || !pass) {
+                errorLbl.textContent = "Completá usuario y contraseña.";
+                errorLbl.classList.remove("hidden");
+                return;
+            }
+
+            sessionStorage.setItem("barbero_user", user);
+            sessionStorage.setItem("barbero_pass", pass);
+
+            errorLbl.classList.add("hidden");
+            const btn = document.getElementById("btn-login");
+            btn.innerText = "Verificando...";
+
+            const exito = await cargarAgenda();
+
+            if (exito) {
+                document.getElementById("login-modal").classList.add("hidden");
+                btn.innerText = "Ingresar";
+            } else {
+                sessionStorage.removeItem("barbero_user");
+                sessionStorage.removeItem("barbero_pass");
+                errorLbl.textContent = "Usuario o contraseña incorrectos.";
+                errorLbl.classList.remove("hidden");
+                btn.innerText = "Ingresar";
+            }
+        }
+
+        function cerrarSesion() {
+            sessionStorage.removeItem("barbero_user");
+            sessionStorage.removeItem("barbero_pass");
+            window.location.reload();
+        }
+
+        // Cargar Agenda
+        async function cargarAgenda() {
+            const fechaInput = document.getElementById("filtro-fecha").value; // "2026-09-09"
+            const user = sessionStorage.getItem("barbero_user");
+            const pass = sessionStorage.getItem("barbero_pass");
+            const cont = document.getElementById("lista-turnos");
+
+            if (!user || !pass) {
+                document.getElementById("login-modal").classList.remove("hidden");
+                return false;
+            }
+
+            // Traductor de fecha ("2026-09-09" -> "MIÉ 9") para que n8n lo encuentre en el Sheet
+            const [year, month, day] = fechaInput.split('-');
+            const objFecha = new Date(year, month - 1, day);
+            const nombreDia = objFecha.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.', '').toUpperCase().substring(0,3);
+            const numeroDia = objFecha.getDate();
+            const fechaFormateadaParaN8n = `${nombreDia} ${numeroDia}`; 
+
+            cont.innerHTML = "<p class='text-center text-accent font-bold py-10 animate-pulse'>Sincronizando con n8n...</p>";
+
+            try {
+                const res = await fetch(`${WEBHOOK_ADMIN}?accion=obtener&dia=${encodeURIComponent(fechaFormateadaParaN8n)}&usuario=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+                const data = await res.json();
+
+                if (data.error || res.status === 401) return false;
+
+                if (!data.turnos || data.turnos.length === 0) {
+                    cont.innerHTML = `<div class="text-center py-10 bg-cardBg border border-borderColor rounded-xl"><div class="text-4xl mb-2">🍃</div><p class="text-textMuted">No hay turnos registrados para el ${fechaFormateadaParaN8n}.</p></div>`;
+                    actualizarStats([], 0, 0);
+                    return true;
+                }
+
+                // Ordenamos los turnos por hora
+                data.turnos.sort((a, b) => a.hora.localeCompare(b.hora));
+                renderizarTurnos(data.turnos);
+                return true;
+            } catch (err) {
+                console.error(err);
+                cont.innerHTML = "<p class='text-center text-danger font-bold py-10'>Error de conexión al cargar la agenda.</p>";
+                return false;
+            }
+        }
+
+        // Renderizar Tarjetas
+        function renderizarTurnos(turnos) {
+            const cont = document.getElementById("lista-turnos");
+            cont.innerHTML = "";
+            let totalCaja = 0;
+            let cancelados = 0;
+
+            turnos.forEach(t => {
+                const esCancelado = (t.estado === "cancelado");
+                if (esCancelado) {
+                    cancelados++;
+                } else {
+                    const numPrecio = parseInt((t.precio || "0").replace(/[^0-9]/g, "")) || 0;
+                    totalCaja += numPrecio;
+                }
+
+                const card = document.createElement("div");
+                card.className = `bg-cardBg border ${esCancelado ? 'border-danger/30 opacity-60' : 'border-accent/30'} rounded-xl p-5 relative overflow-hidden`;
+                
+                // Cinta indicadora
+                const colorCinta = esCancelado ? 'bg-danger' : 'bg-accent';
+                card.innerHTML = `
+                    <div class="absolute left-0 top-0 w-1 h-full ${colorCinta}"></div>
+                    
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xl font-extrabold text-white">${t.hora} hs</span>
+                                <span class="text-[10px] text-textMuted border border-borderColor px-2 py-0.5 rounded-full">${t.id}</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-white leading-none">${t.nombre}</h4>
+                            <p class="text-sm text-accent font-semibold mt-1">${t.servicio} <span class="text-textMuted font-normal">(${t.precio})</span></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold tracking-widest px-2 py-1 rounded-md uppercase ${esCancelado ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'}">
+                                ${t.estado || 'CONFIRMADO'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-sm border-t border-borderColor/50 pt-3 mt-2">
+                        <span class="text-gray-300">📱 ${t.telefono}</span>
+                        <div class="text-[10px] text-textMuted">
+                            Vino: <strong class="text-white">${t.visitasPrevias || 0}</strong> | Falló: <span class="${t.cancelacionesPrevias > 0 ? 'text-danger font-bold' : ''}">${t.cancelacionesPrevias || 0}</span>
+                        </div>
+                    </div>
+
+                    ${!esCancelado ? `
+                        <div class="mt-4 pt-3 border-t border-borderColor/50">
+                            <p class="text-[10px] font-bold text-textMuted tracking-widest mb-2">NOTIFICAR DEMORA (WHATSAPP/MAIL)</p>
+                            <div class="flex gap-2 mb-2">
+                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 10)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-lg hover:bg-orange-500/10 transition">+10m</button>
+                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 15)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-lg hover:bg-orange-500/10 transition">+15m</button>
+                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 20)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-lg hover:bg-orange-500/10 transition">+20m</button>
+                            </div>
+                            <button onclick="cancelarTurnoBarbero('${t.id}')" class="w-full bg-danger/10 text-danger text-xs font-bold py-2.5 rounded-lg border border-danger/20 hover:bg-danger/20 transition mt-1">
+                                ❌ Cancelar Turno
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                cont.appendChild(card);
+            });
+
+            actualizarStats(turnos.length, totalCaja, cancelados);
+        }
+
+        function actualizarStats(total, caja, cancelados) {
+            document.getElementById("stat-total").textContent = total;
+            document.getElementById("stat-caja").textContent = `$${caja.toLocaleString("es-AR")}`;
+            document.getElementById("stat-cancelados").textContent = cancelados;
+        }
+
+        // Acciones del Barbero
+        async function avisarDemora(id, telefono, nombre, hora, minutos) {
+            if (!confirm(`¿Notificar a ${nombre} que tenés ${minutos} min de demora?`)) return;
+
+            try {
+                const res = await fetch(WEBHOOK_ADMIN, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        accion: "avisar_demora",
+                        usuario: sessionStorage.getItem("barbero_user"),
+                        password: sessionStorage.getItem("barbero_pass"),
+                        id, telefono, nombre, hora, minutos
+                    })
+                });
+                const data = await res.json();
+                alert(data.mensaje || `Aviso de demora enviado con éxito.`);
+            } catch (err) {
+                alert("Error de conexión al enviar el aviso.");
+            }
+        }
+
+        async function cancelarTurnoBarbero(id) {
+            if (!confirm("¿Estás seguro de cancelar este turno? El cliente será notificado.")) return;
+
+            try {
+                const res = await fetch(WEBHOOK_ADMIN, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        accion: "cancelar",
+                        usuario: sessionStorage.getItem("barbero_user"),
+                        password: sessionStorage.getItem("barbero_pass"),
+                        id,
+                        canceladoPor: "barbero"
+                    })
+                });
+                const data = await res.json();
+                alert(data.mensaje || "Turno cancelado correctamente.");
+                cargarAgenda();
+            } catch (err) {
+                alert("Error de conexión al cancelar.");
+            }
+        }
+    </script>
 </body>
 </html>
