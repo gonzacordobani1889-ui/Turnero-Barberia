@@ -1,72 +1,134 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cancelar Turno — Barbería Cordobani</title>
-  <link rel="stylesheet" href="assets/styles.css" />
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="logo">✂️ Barbería Cordobani</div>
-      <p>Cancelación de turno</p>
-    </header>
-    <div class="card">
-      <p class="step-label">Ingresá los datos de tu reserva</p>
-      <div class="field-group">
-        <input type="text" id="cancel-id" placeholder="Código de Turno (ej: TB-4821)" />
-        <input type="tel" id="cancel-phone" placeholder="Tu número de teléfono" />
-      </div>
-      <button class="confirm" id="btn-cancelar-cliente" style="background: var(--danger); color: #fff;">Cancelar Mi Turno</button>
-      <p class="summary" id="cancel-summary"></p>
-    </div>
-  </div>
-
-  <script>
-    const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
-
-    document.getElementById("btn-cancelar-cliente").addEventListener("click", async () => {
-      const id = document.getElementById("cancel-id").value.trim();
-      const telefono = document.getElementById("cancel-phone").value.trim();
-      const summary = document.getElementById("cancel-summary");
-
-      if (!id || !telefono) {
-        summary.className = "summary error";
-        summary.textContent = "Por favor, completá ambos campos.";
-        return;
-      }
-
-      if (!confirm("¿Estás seguro de que deseas cancelar tu turno?")) return;
-
-      summary.className = "summary";
-      summary.textContent = "Procesando cancelación...";
-
-      try {
-        const res = await fetch(WEBHOOK_ADMIN, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            accion: "cancelar_cliente",
-            id,
-            telefono
-          })
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.ok) {
-          summary.className = "summary ok";
-          summary.textContent = "Tu turno ha sido cancelado con éxito.";
-        } else {
-          summary.className = "summary error";
-          summary.textContent = data.mensaje || "No se encontró un turno con esos datos.";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAV Barber Studio - Cancelar Turno</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        appBg: '#0a0a0f',
+                        cardBg: '#12121a',
+                        accent: '#8b5cf6',
+                        danger: '#ef4444', /* Rojo para cancelar */
+                        textMuted: '#8a8a98',
+                        borderColor: 'rgba(255,255,255,0.08)'
+                    }
+                }
+            }
         }
-      } catch (err) {
-        summary.className = "summary error";
-        summary.textContent = "Error de conexión al intentar cancelar.";
-      }
-    });
-  </script>
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-appBg text-white min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="flex justify-between items-center p-5 border-b border-borderColor bg-appBg/90 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full border border-borderColor flex items-center justify-center font-bold text-xs bg-cardBg">
+                MAV
+            </div>
+            <div>
+                <h2 class="font-bold text-sm leading-tight">MAV Barber Studio</h2>
+                <span class="text-[10px] text-textMuted tracking-widest uppercase">Gestión de Turnos</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR CENTRAL -->
+    <main class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto p-5">
+        
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-cardBg border border-borderColor rounded-full flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg">📅</div>
+            <h1 class="text-3xl font-extrabold mb-2 tracking-tight">Cancelar Turno</h1>
+            <p class="text-textMuted text-sm">Ingresá los datos de tu reserva para anularla.</p>
+        </div>
+
+        <div class="bg-cardBg border border-borderColor rounded-2xl p-6 flex flex-col gap-5 shadow-xl">
+            
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-textMuted tracking-widest">CÓDIGO DE TURNO *</label>
+                <input type="text" id="cancel-id" class="bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-danger transition uppercase" placeholder="Ej: TB-4821">
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-textMuted tracking-widest">TU TELÉFONO *</label>
+                <input type="tel" id="cancel-phone" class="bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-danger transition" placeholder="Sin el +54">
+            </div>
+
+            <!-- Espacio para mensajes de error/éxito -->
+            <div id="cancel-summary" class="hidden text-center text-sm font-semibold p-3 rounded-xl"></div>
+
+            <button id="btn-cancelar-cliente" class="w-full bg-danger text-white font-extrabold text-lg py-4 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:bg-red-600 transition mt-2">
+                Cancelar Mi Turno
+            </button>
+            
+            <a href="index.html" class="text-center text-sm text-textMuted hover:text-white transition mt-2">Volver al inicio</a>
+        </div>
+    </main>
+
+    <!-- SCRIPT DE CANCELACIÓN (Tu código original adaptado visualmente) -->
+    <script>
+        const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
+
+        document.getElementById("btn-cancelar-cliente").addEventListener("click", async () => {
+            const id = document.getElementById("cancel-id").value.trim().toUpperCase();
+            const telefono = document.getElementById("cancel-phone").value.trim();
+            const summary = document.getElementById("cancel-summary");
+
+            summary.classList.remove("hidden", "bg-red-500/10", "text-red-500", "bg-green-500/10", "text-green-500", "bg-blue-500/10", "text-blue-500");
+
+            if (!id || !telefono) {
+                summary.classList.add("bg-red-500/10", "text-red-500");
+                summary.textContent = "Por favor, completá ambos campos.";
+                return;
+            }
+
+            if (!confirm("¿Estás seguro de que querés cancelar tu turno de forma definitiva?")) return;
+
+            summary.classList.add("bg-blue-500/10", "text-blue-500");
+            summary.textContent = "Procesando cancelación...";
+            document.getElementById("btn-cancelar-cliente").disabled = true;
+            document.getElementById("btn-cancelar-cliente").classList.add("opacity-50");
+
+            try {
+                const res = await fetch(WEBHOOK_ADMIN, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        accion: "cancelar_cliente",
+                        id,
+                        telefono
+                    })
+                });
+
+                const data = await res.json();
+
+                summary.classList.remove("bg-blue-500/10", "text-blue-500");
+
+                if (res.ok && data.ok) {
+                    summary.classList.add("bg-green-500/10", "text-green-500");
+                    summary.textContent = "Tu turno ha sido cancelado con éxito.";
+                    document.getElementById("btn-cancelar-cliente").style.display = "none";
+                } else {
+                    summary.classList.add("bg-red-500/10", "text-red-500");
+                    summary.textContent = data.mensaje || "No se encontró un turno con esos datos.";
+                    document.getElementById("btn-cancelar-cliente").disabled = false;
+                    document.getElementById("btn-cancelar-cliente").classList.remove("opacity-50");
+                }
+            } catch (err) {
+                summary.classList.remove("bg-blue-500/10", "text-blue-500");
+                summary.classList.add("bg-red-500/10", "text-red-500");
+                summary.textContent = "Error de conexión al intentar cancelar.";
+                document.getElementById("btn-cancelar-cliente").disabled = false;
+                document.getElementById("btn-cancelar-cliente").classList.remove("opacity-50");
+            }
+        });
+    </script>
 </body>
 </html>
