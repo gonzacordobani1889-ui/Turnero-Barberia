@@ -160,26 +160,26 @@
                 <span class="font-bold text-accent text-sm" id="resumen-precio">$12.000</span>
             </div>
 
-            <h5 class="text-xs font-bold text-textMuted tracking-widest mb-4">SEPTIEMBRE</h5>
-            
-            <!-- Carrusel de Fechas -->
-            <div class="flex space-x-3 overflow-x-auto pb-4 mb-6 scrollbar-hide">
-                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
-                    <span class="text-[10px] uppercase text-textMuted font-bold">Mar</span>
-                    <span class="text-2xl font-extrabold mt-1">8</span>
-                </button>
-                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
-                    <span class="text-[10px] uppercase text-textMuted font-bold">Mié</span>
-                    <span class="text-2xl font-extrabold mt-1">9</span>
-                </button>
-                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
-                    <span class="text-[10px] uppercase text-textMuted font-bold">Jue</span>
-                    <span class="text-2xl font-extrabold mt-1">10</span>
-                </button>
-                <button class="fecha-btn flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl p-3 min-w-[70px] shrink-0" onclick="seleccionarFecha(this)">
-                    <span class="text-[10px] uppercase text-textMuted font-bold">Vie</span>
-                    <span class="text-2xl font-extrabold mt-1">11</span>
-                </button>
+           <!-- Selector de Fechas (Estilo App Premium) -->
+            <div class="mb-8">
+                <h5 class="text-xs font-bold text-textMuted tracking-widest mb-4 uppercase">FECHA</h5>
+                
+                <div class="flex items-stretch gap-1 h-[85px]">
+                    <!-- Botón Atrás -->
+                    <button id="btn-prev-week" onclick="moverDias(-7)" class="w-8 shrink-0 flex items-center justify-center bg-appBg border border-borderColor rounded-xl text-textMuted hover:bg-cardBg transition disabled:opacity-20 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    
+                    <!-- Contenedor de los 7 días -->
+                    <div id="contenedor-fechas" class="flex-1 flex gap-1 justify-between">
+                        <!-- Se llena solo con JS -->
+                    </div>
+                    
+                    <!-- Botón Adelante -->
+                    <button id="btn-next-week" onclick="moverDias(7)" class="w-8 shrink-0 flex items-center justify-center bg-appBg border border-borderColor rounded-xl text-textMuted hover:bg-cardBg hover:text-accent transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
             </div>
 
             <h5 class="text-xs font-bold text-textMuted tracking-widest mb-4">HORARIOS</h5>
@@ -271,19 +271,87 @@
             activarBotonSiguiente();
         }
 
-        // Función 2: Seleccionar Fecha
-        function seleccionarFecha(btn) {
+       // ==========================================
+        // SISTEMA DE CALENDARIO DINÁMICO (ESTILO APP)
+        // ==========================================
+        
+        let fechaPivote = new Date();
+        fechaPivote.setHours(0,0,0,0);
+        const hoyGlobal = new Date(fechaPivote); 
+
+        // Función que dibuja los botones
+        function generarCalendario(fechaInicio) {
+            const contenedor = document.getElementById('contenedor-fechas');
+            contenedor.innerHTML = ''; 
+            
+            // Controlamos la flecha izquierda (Bloqueo del pasado)
+            const btnPrev = document.getElementById('btn-prev-week');
+            if (fechaInicio <= hoyGlobal) {
+                btnPrev.disabled = true;
+            } else {
+                btnPrev.disabled = false;
+            }
+
+            // Fabricamos los 7 botones de los días
+            for (let i = 0; i < 7; i++) {
+                const diaIterado = new Date(fechaInicio);
+                diaIterado.setDate(diaIterado.getDate() + i);
+                
+                // Formateamos los textos
+                const nombreDia = diaIterado.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.', '').toUpperCase().substring(0,3);
+                const numeroDia = diaIterado.getDate();
+                const nombreMes = diaIterado.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '');
+                
+                // Formato perfecto para n8n: YYYY-MM-DD
+                const fechaISO = diaIterado.toISOString().split('T')[0]; 
+                
+                // Creamos la tarjetita
+                const btn = document.createElement('button');
+                btn.className = 'fecha-btn flex-1 flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl py-2 hover:border-accent transition min-w-[38px]';
+                btn.onclick = () => seleccionarFechaDinamica(btn, fechaISO, `${nombreDia} ${numeroDia}`);
+                
+                btn.innerHTML = `
+                    <span class="text-[9px] font-bold text-textMuted mb-1">${nombreDia}</span>
+                    <span class="text-xl font-extrabold text-white leading-none">${numeroDia}</span>
+                    <span class="text-[9px] font-medium text-textMuted mt-1 capitalize">${nombreMes}</span>
+                `;
+                contenedor.appendChild(btn);
+            }
+        }
+
+        // Función de las flechas (salta de a 7 días)
+        function moverDias(dias) {
+            fechaPivote.setDate(fechaPivote.getDate() + dias);
+            // Seguro extra: si intenta ir al pasado, lo clavamos en hoy
+            if (fechaPivote < hoyGlobal) {
+                fechaPivote = new Date(hoyGlobal);
+            }
+            generarCalendario(fechaPivote);
+        }
+
+        // Función al tocar un día
+        function seleccionarFechaDinamica(btn, fechaISO, textoPantalla) {
+            // Pintamos el botón elegido
             document.querySelectorAll('.fecha-btn').forEach(b => {
                 b.classList.remove('border-accent', 'bg-accent');
                 b.classList.add('border-borderColor', 'bg-cardBg');
             });
             btn.classList.remove('border-borderColor', 'bg-cardBg');
             btn.classList.add('border-accent', 'bg-accent');
+
+            // Guardamos el texto para mostrarle al cliente en la App (Ej: "MIÉ 9")
+            reserva.fecha = textoPantalla; 
+            document.getElementById('resumen-fecha').innerText = `📅 ` + textoPantalla;
             
-            reserva.fecha = btn.innerText.replace('\n', ' ');
-            document.getElementById('resumen-fecha').innerText = `📅 ` + reserva.fecha;
+            // Guardamos la fecha exacta para n8n y Calendar (Ej: "2026-09-09")
+            reserva.fechaIsoExacta = fechaISO; 
+            
+            console.log("Fecha seleccionada para n8n:", reserva.fechaIsoExacta);
             chequearPaso2();
         }
+
+        // Arrancamos el motor visual al cargar la página
+        generarCalendario(fechaPivote);
 
         // Función 3: Seleccionar Hora
         function seleccionarHora(btn) {
