@@ -362,6 +362,25 @@
                 desactivarBotonSiguiente();
                 btnAtras.classList.add('hidden'); // Ocultamos atrás para evitar dobles envíos
 
+               // --- MAGIA DE GOOGLE CALENDAR ---
+                // Extraemos el día (ej: de "Mar 8" saca "08")
+                const numeroDia = reserva.fecha.replace(/[^0-9]/g, '').padStart(2, '0');
+                
+                // Calculamos duración según el servicio que eligió
+                let duracion = 30; // 30 min por defecto
+                if (reserva.servicio.includes("Barba") || reserva.servicio.includes("barba")) duracion = 60;
+                if (reserva.servicio.includes("Mechitas")) duracion = 90;
+
+                // Armamos las fechas en el formato estricto ISO (Septiembre 2026, Hora Argentina -03:00)
+                const fechaInicio = `2026-09-${numeroDia}T${reserva.hora}:00-03:00`;
+                
+                // Sumamos los minutos para decirle a Google a qué hora termina el turno
+                const objFecha = new Date(fechaInicio);
+                objFecha.setMinutes(objFecha.getMinutes() + duracion);
+                objFecha.setHours(objFecha.getHours() - 3); // Ajuste horario local
+                const fechaFin = objFecha.toISOString().replace('.000Z', '-03:00');
+                // --------------------------------
+
                 // 4. Armamos el JSON exacto que espera n8n
                 const datosTurno = {
                     nombre: nombre,
@@ -370,7 +389,9 @@
                     servicio: reserva.servicio,
                     precio: reserva.precio,
                     dia: reserva.fecha,
-                    hora: reserva.hora
+                    hora: reserva.hora,
+                    fechaInicio: fechaInicio, // <--- Este viaja al Start Time
+                    fechaFin: fechaFin        // <--- Este viaja al End Time
                 };
 
                 // 5. TU URL DE N8N (Acordate: podés sumarle -test para probar en pantalla)
