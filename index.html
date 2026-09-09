@@ -245,9 +245,10 @@
     </div>
 
    <!-- SCRIPT DE NAVEGACIÓN, SELECCIÓN Y CONEXIÓN CON N8N -->
+    <!-- SCRIPT DE NAVEGACIÓN, SELECCIÓN Y CONEXIÓN CON N8N -->
     <script>
         let pasoActual = 1;
-        let reserva = { servicio: '', precio: '', fecha: '', hora: '' };
+        let reserva = { servicio: '', precio: '', fecha: '', hora: '', fechaIsoExacta: '' };
 
         // DOM Elements
         const btnSiguiente = document.getElementById('btn-siguiente');
@@ -271,7 +272,7 @@
             activarBotonSiguiente();
         }
 
-       // ==========================================
+        // ==========================================
         // SISTEMA DE CALENDARIO DINÁMICO (ESTILO APP)
         // ==========================================
         
@@ -279,12 +280,10 @@
         fechaPivote.setHours(0,0,0,0);
         const hoyGlobal = new Date(fechaPivote); 
 
-        // Función que dibuja los botones
         function generarCalendario(fechaInicio) {
             const contenedor = document.getElementById('contenedor-fechas');
             contenedor.innerHTML = ''; 
             
-            // Controlamos la flecha izquierda (Bloqueo del pasado)
             const btnPrev = document.getElementById('btn-prev-week');
             if (fechaInicio <= hoyGlobal) {
                 btnPrev.disabled = true;
@@ -292,20 +291,16 @@
                 btnPrev.disabled = false;
             }
 
-            // Fabricamos los 7 botones de los días
             for (let i = 0; i < 7; i++) {
                 const diaIterado = new Date(fechaInicio);
                 diaIterado.setDate(diaIterado.getDate() + i);
                 
-                // Formateamos los textos
                 const nombreDia = diaIterado.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.', '').toUpperCase().substring(0,3);
                 const numeroDia = diaIterado.getDate();
                 const nombreMes = diaIterado.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '');
                 
-                // Formato perfecto para n8n: YYYY-MM-DD
                 const fechaISO = diaIterado.toISOString().split('T')[0]; 
                 
-                // Creamos la tarjetita
                 const btn = document.createElement('button');
                 btn.className = 'fecha-btn flex-1 flex flex-col items-center justify-center bg-cardBg border border-borderColor rounded-xl py-2 hover:border-accent transition min-w-[38px]';
                 btn.onclick = () => seleccionarFechaDinamica(btn, fechaISO, `${nombreDia} ${numeroDia}`);
@@ -319,19 +314,15 @@
             }
         }
 
-        // Función de las flechas (salta de a 7 días)
         function moverDias(dias) {
             fechaPivote.setDate(fechaPivote.getDate() + dias);
-            // Seguro extra: si intenta ir al pasado, lo clavamos en hoy
             if (fechaPivote < hoyGlobal) {
                 fechaPivote = new Date(hoyGlobal);
             }
             generarCalendario(fechaPivote);
         }
 
-        // Función al tocar un día
         function seleccionarFechaDinamica(btn, fechaISO, textoPantalla) {
-            // Pintamos el botón elegido
             document.querySelectorAll('.fecha-btn').forEach(b => {
                 b.classList.remove('border-accent', 'bg-accent');
                 b.classList.add('border-borderColor', 'bg-cardBg');
@@ -339,61 +330,51 @@
             btn.classList.remove('border-borderColor', 'bg-cardBg');
             btn.classList.add('border-accent', 'bg-accent');
 
-            // Guardamos el texto para mostrarle al cliente en la App (Ej: "MIÉ 9")
             reserva.fecha = textoPantalla; 
             document.getElementById('resumen-fecha').innerText = `📅 ` + textoPantalla;
-            
-            // Guardamos la fecha exacta para n8n y Calendar (Ej: "2026-09-09")
             reserva.fechaIsoExacta = fechaISO; 
             
             console.log("Fecha seleccionada para n8n:", reserva.fechaIsoExacta);
             chequearDisponibilidad(textoPantalla);
             chequearPaso2();
         }
-        // Función que consulta a n8n y tacha los horarios
+
         async function chequearDisponibilidad(diaBuscado) {
             const botonesHora = document.querySelectorAll('.hora-btn');
             
-            // 1. Apagamos todos los horarios y ponemos opacidad mientras carga
             botonesHora.forEach(b => {
                 b.disabled = true;
                 b.classList.add('opacity-50', 'cursor-wait');
-                b.classList.remove('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed', 'border-accent', 'bg-accent'); // Limpiamos estilos viejos
+                b.classList.remove('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed', 'border-accent', 'bg-accent'); 
                 b.classList.add('bg-cardBg', 'border-borderColor');
             });
 
-            // Reseteamos la hora elegida previamente si cambia de día
             reserva.hora = '';
             document.getElementById('resumen-hora').innerText = `🕒 -- hs`;
             desactivarBotonSiguiente();
 
             try {
-                // 2. Le preguntamos a tu n8n por los ocupados (Usamos tu webhook)
                 const urlGet = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno';
                 const respuesta = await fetch(`${urlGet}?dia=${encodeURIComponent(diaBuscado)}`);
                 const data = await respuesta.json();
                 
-                const ocupados = data.ocupados || []; // Viene de n8n: ["10:30", "12:00"]
+                const ocupados = data.ocupados || []; 
 
-                // 3. Volvemos a prender los botones, tachando los que están ocupados
                 botonesHora.forEach(b => {
                     const horaBoton = b.innerText.trim();
-                    b.classList.remove('opacity-50', 'cursor-wait'); // Sacamos modo carga
+                    b.classList.remove('opacity-50', 'cursor-wait'); 
 
                     if (ocupados.includes(horaBoton)) {
-                        // Está OCUPADO: Lo tachamos estilo App
                         b.disabled = true;
                         b.classList.add('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed');
                         b.classList.remove('bg-cardBg', 'hover:border-accent');
                     } else {
-                        // Está LIBRE: Lo habilitamos para hacer clic
                         b.disabled = false;
                     }
                 });
 
             } catch (error) {
                 console.error("Error al consultar disponibilidad:", error);
-                // Si falla internet, prendemos todo por las dudas
                 botonesHora.forEach(b => {
                     b.disabled = false;
                     b.classList.remove('opacity-50', 'cursor-wait');
@@ -401,7 +382,6 @@
             }
         }
 
-        // Arrancamos el motor visual al cargar la página
         generarCalendario(fechaPivote);
 
         // Función 3: Seleccionar Hora
@@ -461,62 +441,52 @@
                 pasoActual++;
                 
             } else if (pasoActual === 3) {
-                // ===============================================
-                // BLOQUE DE CONEXIÓN A N8N (EL CEREBRO DEL TURNERO)
-                // ===============================================
-                
-                // 1. Capturamos los datos del formulario
                 const nombre = document.getElementById('cliente-nombre').value.trim();
                 const email = document.getElementById('cliente-email').value.trim();
                 const telefono = document.getElementById('cliente-telefono').value.trim();
                 
-                // 2. Validamos que no haya trampas
                 if (nombre === '' || email === '' || telefono === '') {
                     alert('Por favor, completá tu Nombre, Email y Teléfono para confirmar.');
                     return;
                 }
 
-                // 3. Cambiamos la interfaz a "Procesando"
                 btnSiguiente.innerText = "Procesando...";
                 desactivarBotonSiguiente();
-                btnAtras.classList.add('hidden'); // Ocultamos atrás para evitar dobles envíos
+                btnAtras.classList.add('hidden');
 
-               // --- MAGIA DE GOOGLE CALENDAR ---
-                // Extraemos el día (ej: de "Mar 8" saca "08")
-                const numeroDia = reserva.fecha.replace(/[^0-9]/g, '').padStart(2, '0');
-                
-                // Calculamos duración según el servicio que eligió
+                // --- CALCULO EXACTO PARA GOOGLE CALENDAR ---
                 let duracion = 30; // 30 min por defecto
-                if (reserva.servicio.includes("Barba") || reserva.servicio.includes("barba")) duracion = 60;
-                if (reserva.servicio.includes("Mechitas")) duracion = 90;
+                const servicioLower = reserva.servicio.toLowerCase();
+                if (servicioLower.includes("barba")) duracion = 60;
+                if (servicioLower.includes("mechitas")) duracion = 90;
 
-                // Armamos las fechas en el formato estricto ISO (Septiembre 2026, Hora Argentina -03:00)
-                const fechaInicio = `2026-09-${numeroDia}T${reserva.hora}:00-03:00`;
+                const fechaInicio = `${reserva.fechaIsoExacta}T${reserva.hora}:00-03:00`;
                 
-                // Sumamos los minutos para decirle a Google a qué hora termina el turno
                 const objFecha = new Date(fechaInicio);
                 objFecha.setMinutes(objFecha.getMinutes() + duracion);
-                objFecha.setHours(objFecha.getHours() - 3); // Ajuste horario local
-                const fechaFin = objFecha.toISOString().replace('.000Z', '-03:00');
-                // --------------------------------
+                
+                const year = objFecha.getFullYear();
+                const month = String(objFecha.getMonth() + 1).padStart(2, '0');
+                const day = String(objFecha.getDate()).padStart(2, '0');
+                const hours = String(objFecha.getHours()).padStart(2, '0');
+                const minutes = String(objFecha.getMinutes()).padStart(2, '0');
+                const fechaFin = `${year}-${month}-${day}T${hours}:${minutes}:00-03:00`;
+                // ----------------------------------------------
 
-                // 4. Armamos el JSON exacto que espera n8n
                 const datosTurno = {
                     nombre: nombre,
                     telefono: telefono,
                     mail: email,
                     servicio: reserva.servicio,
                     precio: reserva.precio,
-                    dia: reserva.fecha,
+                    dia: reserva.fecha, 
                     hora: reserva.hora,
-                    fechaInicio: fechaInicio, // <--- Este viaja al Start Time
-                    fechaFin: fechaFin        // <--- Este viaja al End Time
+                    fechaInicio: fechaInicio, 
+                    fechaFin: fechaFin        
                 };
 
-                // 5. TU URL DE N8N (Acordate: podés sumarle -test para probar en pantalla)
                 const webhookUrl = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno'; 
 
-                // 6. El disparo de datos
                 fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -525,27 +495,22 @@
                 .then(response => response.json())
                 .then(data => {
                     if(data.ok === true) {
-                        // ÉXITO TOTAL: Desaparecemos el formulario y mostramos mensaje premium
                         document.getElementById('paso-3').innerHTML = `
                             <div class="text-center py-12">
                                 <div class="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.2)]">✓</div>
                                 <h1 class="text-3xl font-extrabold mb-3 text-white tracking-tight">¡Listo, ${nombre}!</h1>
                                 <p class="text-textMuted mb-2 text-lg">Tu turno quedó confirmado para el <strong class="text-white">${reserva.fecha}</strong> a las <strong class="text-white">${reserva.hora} hs</strong>.</p>
-                                <p class="text-sm text-gray-500">Ya te enviamos los detalles a ${email}</p>
+                                <p class="text-sm text-gray-500">Ya te enviamos la invitación al calendario a ${email}</p>
                             </div>
                         `;
                         
-                        // Ponemos el botón verde de "Finalizado"
                         btnSiguiente.innerText = "Volver al inicio";
                         btnSiguiente.classList.replace('bg-accent', 'bg-green-500');
                         btnSiguiente.classList.replace('shadow-[0_0_15px_rgba(139,92,246,0.4)]', 'shadow-[0_0_15px_rgba(34,197,94,0.4)]');
                         activarBotonSiguiente();
-                        
-                        // Si hace clic en "Volver al inicio", recarga la página
                         btnSiguiente.onclick = function() { window.location.reload(); };
 
                     } else {
-                        // RECHAZO DE N8N (Ej: horario ocupado)
                         alert("Aviso: " + data.mensaje);
                         btnSiguiente.innerText = "Confirmar Turno";
                         activarBotonSiguiente();
