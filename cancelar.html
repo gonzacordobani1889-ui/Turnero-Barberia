@@ -2,7 +2,7 @@
 <html lang="es-AR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MAV Barber Studio - Cancelar Turno</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,28 +11,21 @@
             theme: {
                 extend: {
                     colors: {
-                        appBg: '#0a0a0f',
-                        cardBg: '#12121a',
-                        accent: '#8b5cf6',
-                        danger: '#ef4444', /* Rojo para cancelar */
-                        textMuted: '#8a8a98',
-                        borderColor: 'rgba(255,255,255,0.08)'
+                        appBg: '#0a0a0f', cardBg: '#12121a', accent: '#8b5cf6',
+                        danger: '#ef4444', textMuted: '#8a8a98', borderColor: 'rgba(255,255,255,0.08)'
                     }
                 }
             }
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <style>body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }</style>
 </head>
-<body class="bg-appBg text-white min-h-screen flex flex-col">
+<body class="bg-appBg text-white min-h-screen flex flex-col relative">
 
-    <!-- HEADER -->
-    <header class="flex justify-between items-center p-5 border-b border-borderColor bg-appBg/90 backdrop-blur-md">
+    <header class="flex justify-between items-center p-5 border-b border-borderColor bg-appBg/90 backdrop-blur-md sticky top-0">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full border border-borderColor flex items-center justify-center font-bold text-xs bg-cardBg">
-                MAV
-            </div>
+            <div class="w-10 h-10 rounded-full border border-borderColor flex items-center justify-center font-bold text-xs bg-cardBg shadow-[0_0_10px_rgba(139,92,246,0.15)]">MAV</div>
             <div>
                 <h2 class="font-bold text-sm leading-tight">MAV Barber Studio</h2>
                 <span class="text-[10px] text-textMuted tracking-widest uppercase">Gestión de Turnos</span>
@@ -40,31 +33,30 @@
         </div>
     </header>
 
-    <!-- CONTENEDOR CENTRAL -->
-    <main class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto p-5">
-        
+    <main class="flex-1 flex flex-col justify-center max-w-md w-full mx-auto p-5 pb-20">
         <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-cardBg border border-borderColor rounded-full flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg">📅</div>
+            <div class="w-16 h-16 bg-danger/10 text-danger border border-danger/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 shadow-[0_0_20px_rgba(239,68,68,0.15)]">📅</div>
             <h1 class="text-3xl font-extrabold mb-2 tracking-tight">Cancelar Turno</h1>
             <p class="text-textMuted text-sm">Ingresá los datos de tu reserva para anularla.</p>
         </div>
 
         <div class="bg-cardBg border border-borderColor rounded-2xl p-6 flex flex-col gap-5 shadow-xl">
-            
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-bold text-textMuted tracking-widest">CÓDIGO DE TURNO *</label>
-                <input type="text" id="cancel-id" class="bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-danger transition uppercase" placeholder="Ej: TB-4821">
+                <input type="text" id="cancel-id" class="bg-appBg border border-borderColor rounded-2xl p-4 text-white outline-none focus:border-danger transition-all uppercase" placeholder="Ej: TB-4821">
             </div>
 
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-bold text-textMuted tracking-widest">TU TELÉFONO *</label>
-                <input type="tel" id="cancel-phone" class="bg-appBg border border-borderColor rounded-xl p-4 text-white outline-none focus:border-danger transition" placeholder="Sin el +54">
+                <div class="flex bg-appBg border border-borderColor rounded-2xl overflow-hidden focus-within:border-danger transition-all">
+                    <span class="p-4 bg-cardBg text-textMuted font-bold border-r border-borderColor">+54</span>
+                    <input type="tel" id="cancel-phone" class="bg-transparent p-4 text-white outline-none w-full" placeholder="341 610 6595">
+                </div>
             </div>
 
-            <!-- Espacio para mensajes de error/éxito -->
-            <div id="cancel-summary" class="hidden text-center text-sm font-semibold p-3 rounded-xl"></div>
+            <div id="cancel-summary" class="hidden text-center text-sm font-semibold p-4 rounded-xl"></div>
 
-            <button id="btn-cancelar-cliente" class="w-full bg-danger text-white font-extrabold text-lg py-4 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:bg-red-600 transition mt-2">
+            <button id="btn-cancelar-cliente" class="w-full bg-danger text-white font-extrabold text-lg py-4 rounded-2xl shadow-[0_8_20px_rgba(239,68,68,0.3)] hover:bg-red-600 active:scale-95 transition-all mt-2">
                 Cancelar Mi Turno
             </button>
             
@@ -72,7 +64,6 @@
         </div>
     </main>
 
-    <!-- SCRIPT DE CANCELACIÓN (Tu código original adaptado visualmente) -->
     <script>
         const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
 
@@ -100,15 +91,9 @@
                 const res = await fetch(WEBHOOK_ADMIN, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        accion: "cancelar_cliente",
-                        id,
-                        telefono
-                    })
+                    body: JSON.stringify({ accion: "cancelar_cliente", id, telefono })
                 });
-
                 const data = await res.json();
-
                 summary.classList.remove("bg-blue-500/10", "text-blue-500");
 
                 if (res.ok && data.ok) {
