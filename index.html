@@ -260,7 +260,25 @@
         // DOM Elements
         const btnSiguiente = document.getElementById('btn-siguiente');
         const btnAtras = document.getElementById('btn-atras');
+        const botonesContacto = document.getElementById('botones-contacto');
 
+        // Cuando toca "Siguiente", ocultamos los botones flotantes
+        btnSiguiente.addEventListener('click', () => {
+            if (botonesContacto) {
+                botonesContacto.style.display = 'none';
+            }
+        });
+
+        // Cuando toca "Atrás", revisamos si volvió al principio para mostrarlos de nuevo
+        btnAtras.addEventListener('click', () => {
+            setTimeout(() => {
+                const paso1 = document.getElementById('paso-1');
+                if (botonesContacto && paso1 && !paso1.classList.contains('hidden')) {
+                    botonesContacto.style.display = 'block';
+                }
+            }, 50); // Le damos un milisegundo para que lea la pantalla
+        });
+        
         // Función 1: Seleccionar Servicio
         function seleccionarServicio(btn) {
             document.querySelectorAll('.servicio-btn').forEach(b => {
