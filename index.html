@@ -452,7 +452,13 @@
             const email = document.getElementById('cliente-email').value.trim();
             const tel = document.getElementById('cliente-telefono').value.trim();
             
-            if(nom.length > 2 && email.includes('@') && tel.length > 5) {
+            // Regex: Exige formato real (texto + @ + dominio + .com/.ar)
+            const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            
+            // Regex: Exige exactamente 10 números, sin letras ni espacios (ideal para Argentina sin el +54)
+            const telValido = /^[0-9]{10}$/.test(tel);
+            
+            if(nom.length > 2 && emailValido && telValido) {
                 activarBotonSiguiente();
             } else {
                 desactivarBotonSiguiente();
