@@ -396,12 +396,19 @@
                 const data = await respuesta.json();
                 
                 const ocupados = data.ocupados || []; 
+                const ahora = new Date(); // Tomamos el día y la hora exacta de este mismo instante
 
                 botonesHora.forEach(b => {
                     const horaBoton = b.innerText.trim();
                     b.classList.remove('opacity-50', 'cursor-wait'); 
 
-                    if (ocupados.includes(horaBoton)) {
+                    // Calculamos matemáticamente si el horario de este botón ya pasó
+                    const [horaBtn, minBtn] = horaBoton.split(':');
+                    const fechaDelTurno = new Date(`${reserva.fechaIsoExacta}T${horaBtn}:${minBtn}:00-03:00`);
+                    const yaPaso = fechaDelTurno <= ahora; // Da "true" si la hora del botón quedó en el pasado
+
+                    // Tachamos el horario si está en la lista de ocupados O si ya pasó la hora
+                    if (ocupados.includes(horaBoton) || yaPaso) {
                         b.disabled = true;
                         b.classList.add('line-through', 'bg-appBg', 'text-gray-600', 'border-borderColor/30', 'cursor-not-allowed');
                         b.classList.remove('bg-cardBg', 'hover:border-accent');
