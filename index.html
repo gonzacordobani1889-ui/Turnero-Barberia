@@ -276,6 +276,16 @@
         let pasoActual = 1;
         let reserva = { servicio: '', precio: '', fecha: '', hora: '', fechaIsoExacta: '' };
 
+        // --- ESCUDO ANTI-TROLLS: Generador de Huella Digital (Device ID) ---
+        function obtenerDeviceId() {
+            let deviceId = localStorage.getItem('mav_device_token');
+            if (!deviceId) {
+                deviceId = 'id-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+                localStorage.setItem('mav_device_token', deviceId);
+            }
+            return deviceId;
+        }
+
         // DOM Elements
         const btnSiguiente = document.getElementById('btn-siguiente');
         const btnAtras = document.getElementById('btn-atras');
@@ -527,7 +537,8 @@
                     dia: reserva.fecha, 
                     hora: reserva.hora,
                     fechaInicio: fechaInicio, 
-                    fechaFin: fechaFin        
+                    fechaFin: fechaFin,
+                    deviceId: obtenerDeviceId() // <--- AGREGAMOS EL TOKEN OCULTO ACÁ
                 };
 
                 const webhookUrl = 'https://cot98.app.n8n.cloud/webhook/turnero-nuevo-turno'; 
