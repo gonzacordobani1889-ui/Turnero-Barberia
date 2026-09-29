@@ -564,6 +564,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if(data.ok === true) {
+                        // --- GUARDAMOS LOS DATOS EN EL CELULAR ---
+                        localStorage.setItem('mav_cliente_nombre', nombre);
+                        localStorage.setItem('mav_cliente_email', email);
+                        localStorage.setItem('mav_cliente_telefono', telefono);
                         document.getElementById('paso-3').innerHTML = `
                             <div class="text-center py-12">
                                 <div class="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.2)]">✓</div>
@@ -627,6 +631,16 @@
                 pasoActual--;
             }
         }
+        // --- AUTOCOMPLETAR DATOS GUARDADOS ---
+        window.onload = function() {
+            const nomGuardado = localStorage.getItem('mav_cliente_nombre');
+            const emailGuardado = localStorage.getItem('mav_cliente_email');
+            const telGuardado = localStorage.getItem('mav_cliente_telefono');
+            
+            if (nomGuardado) document.getElementById('cliente-nombre').value = nomGuardado;
+            if (emailGuardado) document.getElementById('cliente-email').value = emailGuardado;
+            if (telGuardado) document.getElementById('cliente-telefono').value = telGuardado;
+        };
     </script>
 </body>
 </html>
