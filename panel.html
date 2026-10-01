@@ -5,86 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Mauritto - Barbería</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        appBg: '#0a0a0f', cardBg: '#12121a', accent: '#8b5cf6',
-                        danger: '#ef4444', success: '#22c55e', textMuted: '#8a8a98', borderColor: 'rgba(255,255,255,0.08)'
+                        appBg: '#09090d',
+                        cardBg: '#12121c',
+                        accent: '#8b5cf6',
+                        accentHover: '#7c3aed',
+                        danger: '#ef4444',
+                        success: '#22c55e',
+                        whatsapp: '#25D366',
+                        textMuted: '#94a3b8',
+                        borderColor: 'rgba(255,255,255,0.08)'
                     }
                 }
             }
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .touch-action-manipulation { touch-action: manipulation; }
+    </style>
 </head>
-<body class="bg-appBg text-white min-h-screen">
+<body class="bg-appBg text-white min-h-screen pb-16 selection:bg-accent selection:text-white">
 
     <!-- MODAL DE LOGIN -->
-    <div id="login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300">
-        <div class="bg-cardBg border border-borderColor p-8 rounded-3xl w-[90%] max-w-sm text-center shadow-2xl">
-            <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center text-3xl mx-auto mb-4">🔐</div>
-            <h2 class="text-2xl font-bold mb-1 text-white">Panel Barbero</h2>
-            <p class="text-textMuted text-sm mb-6">Ingresá tus credenciales</p>
+    <div id="login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-borderColor p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
+            <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-accent/30 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                💈
+            </div>
+            <h2 class="text-2xl font-extrabold mb-1 text-white">Panel Barbero</h2>
+            <p class="text-textMuted text-xs mb-6">Ingresá tus credenciales de acceso</p>
             
-            <input type="text" id="auth-user" placeholder="Usuario" class="w-full bg-appBg border border-borderColor rounded-2xl p-4 text-white outline-none focus:border-accent transition mb-3">
-            <input type="password" id="auth-pass" placeholder="Contraseña" class="w-full bg-appBg border border-borderColor rounded-2xl p-4 text-white outline-none focus:border-accent transition mb-6">
+            <form onsubmit="event.preventDefault(); ejecutarLogin();" class="space-y-3">
+                <input type="text" id="auth-user" placeholder="Usuario (ej: admin)" autocomplete="username"
+                    class="w-full bg-appBg border border-borderColor rounded-2xl p-4 text-white placeholder-gray-500 outline-none focus:border-accent transition text-sm">
+                
+                <input type="password" id="auth-pass" placeholder="Contraseña" autocomplete="current-password"
+                    class="w-full bg-appBg border border-borderColor rounded-2xl p-4 text-white placeholder-gray-500 outline-none focus:border-accent transition text-sm">
+                
+                <button type="submit" id="btn-login"
+                    class="w-full bg-accent text-white font-extrabold text-base py-4 rounded-2xl shadow-[0_8px_20px_rgba(139,92,246,0.3)] hover:bg-accentHover active:scale-95 transition-all">
+                    Ingresar a la Agenda
+                </button>
+            </form>
             
-            <button id="btn-login" onclick="ejecutarLogin()" class="w-full bg-accent text-white font-extrabold text-lg py-4 rounded-2xl shadow-[0_8_20px_rgba(139,92,246,0.3)] hover:bg-violet-600 active:scale-95 transition-all">
-                Ingresar
-            </button>
-            <p id="login-error" class="hidden text-danger text-xs mt-4 font-semibold"></p>
+            <p id="login-error" class="hidden text-danger text-xs mt-4 font-semibold bg-danger/10 p-3 rounded-xl border border-danger/20"></p>
         </div>
     </div>
 
     <!-- HEADER PANEL -->
-    <header class="flex justify-between items-center p-5 border-b border-borderColor bg-appBg/90 sticky top-0 z-10 backdrop-blur-md">
+    <header class="flex justify-between items-center p-4 px-5 border-b border-borderColor bg-appBg/90 sticky top-0 z-30 backdrop-blur-md">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-bold text-xs shadow-[0_0_10px_rgba(139,92,246,0.5)]">MAV</div>
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-accent to-purple-400 flex items-center justify-center font-black text-xs text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                MAV
+            </div>
             <div>
-                <h2 class="font-bold text-sm leading-tight">Control de Turnos</h2>
-                <span class="text-[10px] text-textMuted tracking-widest uppercase" id="estado-conexion">Conectado</span>
+                <h1 class="font-bold text-sm leading-tight text-white">MAV Studio</h1>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                    <span class="text-[10px] text-textMuted tracking-wider font-semibold uppercase" id="estado-conexion">En línea</span>
+                </div>
             </div>
         </div>
-        <button onclick="cerrarSesion()" class="text-xs font-bold text-danger bg-danger/10 px-4 py-2 rounded-xl active:scale-95 transition-all">Salir</button>
-    </header>
-
-    <main class="max-w-xl mx-auto p-5">
         
-        <!-- FILTRO DE FECHA -->
-        <div class="bg-cardBg border border-borderColor rounded-2xl p-5 mb-6 flex gap-3 items-end shadow-sm">
-            <div class="flex-1">
-                <label class="text-[10px] font-bold text-textMuted tracking-widest block mb-2">FECHA A CONSULTAR</label>
-                <input type="date" id="filtro-fecha" class="w-full bg-appBg border border-borderColor rounded-xl p-3 text-sm text-white outline-none focus:border-accent transition-all">
-            </div>
-            <button onclick="cargarAgenda()" class="bg-white text-appBg font-bold px-5 py-3 rounded-xl hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                Cargar
+        <div class="flex items-center gap-2">
+            <button onclick="cargarAgenda()" title="Recargar turnos" class="p-2.5 rounded-xl bg-cardBg border border-borderColor hover:bg-white/5 active:scale-90 transition-all text-gray-300">
+                🔄
+            </button>
+            <button onclick="cerrarSesion()" class="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-3.5 py-2.5 rounded-xl border border-danger/20 active:scale-95 transition-all">
+                Salir
             </button>
         </div>
+    </header>
 
-        <!-- MÉTRICAS -->
-        <div class="grid grid-cols-3 gap-3 mb-8">
-            <div class="bg-cardBg border border-borderColor rounded-2xl p-4 text-center">
-                <div id="stat-total" class="text-2xl font-extrabold text-white">0</div>
-                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">TURNOS</div>
+    <main class="max-w-xl mx-auto p-4 sm:p-5">
+        
+        <!-- NAVEGADOR RÁPIDO DE FECHAS -->
+        <div class="bg-cardBg border border-borderColor rounded-2xl p-4 mb-5 shadow-sm">
+            <div class="flex gap-2 mb-3">
+                <button onclick="cambiarFechaRelativa(-1)" class="flex-1 py-2 text-xs font-semibold rounded-xl bg-appBg border border-borderColor text-textMuted hover:text-white active:scale-95 transition">
+                    ◀ Ayer
+                </button>
+                <button onclick="irAHoy()" class="flex-1 py-2 text-xs font-bold rounded-xl bg-accent/20 border border-accent/40 text-accent hover:bg-accent/30 active:scale-95 transition">
+                    📅 HOY
+                </button>
+                <button onclick="cambiarFechaRelativa(1)" class="flex-1 py-2 text-xs font-semibold rounded-xl bg-appBg border border-borderColor text-textMuted hover:text-white active:scale-95 transition">
+                    Mañana ▶
+                </button>
             </div>
-            <div class="bg-cardBg border border-borderColor rounded-2xl p-4 text-center">
-                <div id="stat-caja" class="text-2xl font-extrabold text-success">$0</div>
-                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">CAJA EST.</div>
+            
+            <div class="flex gap-2 items-center">
+                <input type="date" id="filtro-fecha" onchange="cargarAgenda()"
+                    class="flex-1 bg-appBg border border-borderColor rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-accent transition cursor-pointer">
+                <button onclick="cargarAgenda()" class="bg-white text-appBg font-bold px-4 py-2.5 rounded-xl hover:bg-gray-200 active:scale-95 transition text-sm">
+                    Buscar
+                </button>
             </div>
-            <div class="bg-cardBg border border-borderColor rounded-2xl p-4 text-center">
-                <div id="stat-cancelados" class="text-2xl font-extrabold text-danger">0</div>
-                <div class="text-[10px] text-textMuted font-bold tracking-widest mt-1">BAJAS</div>
+        </div>
+
+        <!-- TARJETAS DE MÉTRICAS -->
+        <div class="grid grid-cols-3 gap-2.5 mb-6">
+            <div class="bg-cardBg border border-borderColor rounded-2xl p-3.5 text-center">
+                <div id="stat-total" class="text-2xl font-black text-white">0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest uppercase mt-0.5">Turnos</div>
+            </div>
+            <div class="bg-cardBg border border-borderColor rounded-2xl p-3.5 text-center">
+                <div id="stat-caja" class="text-2xl font-black text-success">$0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest uppercase mt-0.5">Caja Est.</div>
+            </div>
+            <div class="bg-cardBg border border-borderColor rounded-2xl p-3.5 text-center">
+                <div id="stat-cancelados" class="text-2xl font-black text-danger">0</div>
+                <div class="text-[10px] text-textMuted font-bold tracking-widest uppercase mt-0.5">Bajas</div>
             </div>
         </div>
 
         <!-- LISTA DE TURNOS -->
-        <h3 class="text-xs font-bold text-textMuted tracking-widest mb-4">AGENDA DEL DÍA</h3>
-        <div id="lista-turnos" class="flex flex-col gap-4 pb-12">
-            <p class="text-center text-textMuted text-sm py-10">Cargando turnos...</p>
+        <div class="flex items-center justify-between mb-3 px-1">
+            <h2 class="text-xs font-extrabold text-textMuted tracking-widest uppercase">Agenda del Día</h2>
+            <span id="fecha-label" class="text-xs text-accent font-bold"></span>
+        </div>
+
+        <div id="lista-turnos" class="flex flex-col gap-3.5">
+            <p class="text-center text-textMuted text-sm py-12">Cargando turnos...</p>
         </div>
 
     </main>
@@ -93,9 +142,8 @@
         const WEBHOOK_ADMIN = "https://cot98.app.n8n.cloud/webhook/turnero-admin";
 
         document.addEventListener("DOMContentLoaded", () => {
-            const hoy = new Date();
-            hoy.setHours(hoy.getHours() - 3);
-            document.getElementById("filtro-fecha").value = hoy.toISOString().split("T")[0];
+            // Inicializar en fecha actual (Hora Argentina UTC-3)
+            irAHoy(false);
 
             if (sessionStorage.getItem("barbero_user") && sessionStorage.getItem("barbero_pass")) {
                 document.getElementById("login-modal").classList.add("hidden");
@@ -104,6 +152,29 @@
                 document.getElementById("login-modal").classList.remove("hidden");
             }
         });
+
+        function obtenerFechaArg() {
+            const ahora = new Date();
+            // Ajuste a huso horario de Argentina
+            const offsetArg = -3;
+            const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * offsetArg));
+        }
+
+        function irAHoy(autoCargar = true) {
+            const fechaArg = obtenerFechaArg();
+            document.getElementById("filtro-fecha").value = fechaArg.toISOString().split("T")[0];
+            if (autoCargar) cargarAgenda();
+        }
+
+        function cambiarFechaRelativa(dias) {
+            const input = document.getElementById("filtro-fecha");
+            const [y, m, d] = input.value.split('-').map(Number);
+            const fecha = new Date(y, m - 1, d);
+            fecha.setDate(fecha.getDate() + dias);
+            input.value = fecha.toISOString().split("T")[0];
+            cargarAgenda();
+        }
 
         async function ejecutarLogin() {
             const user = document.getElementById("auth-user").value.trim();
@@ -121,19 +192,25 @@
 
             errorLbl.classList.add("hidden");
             const btn = document.getElementById("btn-login");
+            const textoOriginal = btn.innerText;
             btn.innerText = "Verificando...";
+            btn.disabled = true;
 
-            const exito = await cargarAgenda();
+            const resultado = await cargarAgenda();
 
-            if (exito) {
+            btn.disabled = false;
+            btn.innerText = textoOriginal;
+
+            if (resultado === true) {
                 document.getElementById("login-modal").classList.add("hidden");
-                btn.innerText = "Ingresar";
-            } else {
+            } else if (resultado === "error_auth") {
                 sessionStorage.removeItem("barbero_user");
                 sessionStorage.removeItem("barbero_pass");
                 errorLbl.textContent = "Usuario o contraseña incorrectos.";
                 errorLbl.classList.remove("hidden");
-                btn.innerText = "Ingresar";
+            } else {
+                errorLbl.textContent = "Error de conexión. Verificá tu internet o el servidor.";
+                errorLbl.classList.remove("hidden");
             }
         }
 
@@ -148,38 +225,74 @@
             const user = sessionStorage.getItem("barbero_user");
             const pass = sessionStorage.getItem("barbero_pass");
             const cont = document.getElementById("lista-turnos");
+            const lblFecha = document.getElementById("fecha-label");
 
             if (!user || !pass) {
                 document.getElementById("login-modal").classList.remove("hidden");
                 return false;
             }
 
-            const [year, month, day] = fechaInput.split('-');
+            if (!fechaInput) return false;
+
+            // Formatear fecha para n8n (ej: "JUE 1" o "MAR 11")
+            const [year, month, day] = fechaInput.split('-').map(Number);
             const objFecha = new Date(year, month - 1, day);
             const nombreDia = objFecha.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.', '').toUpperCase().substring(0,3);
             const numeroDia = objFecha.getDate();
             const fechaFormateadaParaN8n = `${nombreDia} ${numeroDia}`; 
 
-            cont.innerHTML = "<p class='text-center text-accent font-bold py-10 animate-pulse'>Sincronizando con base de datos...</p>";
+            if (lblFecha) lblFecha.textContent = fechaFormateadaParaN8n;
+
+            cont.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p class="text-accent text-xs font-bold tracking-wider uppercase animate-pulse">Sincronizando agenda...</p>
+                </div>
+            `;
 
             try {
                 const res = await fetch(`${WEBHOOK_ADMIN}?accion=obtener&dia=${encodeURIComponent(fechaFormateadaParaN8n)}&usuario=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+                
+                if (res.status === 401) return "error_auth";
+
                 const data = await res.json();
 
-                if (data.error || res.status === 401) return false;
+                if (data.error && data.error.includes("Credenciales")) {
+                    return "error_auth";
+                }
 
-                if (!data.turnos || data.turnos.length === 0) {
-                    cont.innerHTML = `<div class="text-center py-10 bg-cardBg border border-borderColor rounded-2xl"><div class="text-4xl mb-2">🍃</div><p class="text-textMuted">No hay turnos registrados para el ${fechaFormateadaParaN8n}.</p></div>`;
-                    actualizarStats([], 0, 0);
+                // Si viene un array directo o un objeto con .turnos
+                const listaTurnos = Array.isArray(data) ? data : (data.turnos || []);
+
+                if (listaTurnos.length === 0) {
+                    cont.innerHTML = `
+                        <div class="text-center py-12 bg-cardBg border border-borderColor rounded-3xl p-6">
+                            <div class="text-4xl mb-3">🍃</div>
+                            <h4 class="font-bold text-white text-base">Sin turnos agendados</h4>
+                            <p class="text-textMuted text-xs mt-1">No hay reservas para el día ${fechaFormateadaParaN8n}.</p>
+                        </div>
+                    `;
+                    actualizarStats(0, 0, 0);
                     return true;
                 }
 
-                data.turnos.sort((a, b) => a.hora.localeCompare(b.hora));
-                renderizarTurnos(data.turnos);
+                // Ordenar por hora ascendente
+                listaTurnos.sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
+                renderizarTurnos(listaTurnos);
                 return true;
+
             } catch (err) {
-                cont.innerHTML = "<p class='text-center text-danger font-bold py-10'>Error de conexión al cargar la agenda.</p>";
-                return false;
+                console.error("Error al cargar agenda:", err);
+                cont.innerHTML = `
+                    <div class="text-center py-10 bg-danger/10 border border-danger/20 rounded-2xl p-5">
+                        <p class="text-danger font-bold text-sm mb-2">⚠️ Error de conexión</p>
+                        <p class="text-xs text-textMuted mb-4">No se pudo sincronizar con n8n.</p>
+                        <button onclick="cargarAgenda()" class="bg-danger text-white text-xs font-bold px-4 py-2 rounded-xl active:scale-95 transition">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
+                return "error_red";
             }
         }
 
@@ -189,52 +302,90 @@
             let totalCaja = 0, cancelados = 0;
 
             turnos.forEach(t => {
-                const esCancelado = (t.estado === "cancelado");
-                if (esCancelado) cancelados++;
-                else totalCaja += parseInt((t.precio || "0").replace(/[^0-9]/g, "")) || 0;
+                const esCancelado = ((t.estado || "").toLowerCase() === "cancelado");
+
+                // Extracción ultra-segura del precio numérico (evita el bug de replace)
+                const precioStr = String(t.precio || "0");
+                const precioNumerico = parseInt(precioStr.replace(/[^0-9]/g, "")) || 0;
+
+                if (esCancelado) {
+                    cancelados++;
+                } else {
+                    // Si en la base de datos guardaron "12" representando 12000, o directamente 12000:
+                    totalCaja += (precioNumerico > 0 && precioNumerico < 100) ? (precioNumerico * 1000) : precioNumerico;
+                }
+
+                const telefonoLimpio = String(t.telefono || "").replace(/[^0-9]/g, "");
+                const esClienteFrecuente = (Number(t.visitasPrevias) >= 3);
 
                 const card = document.createElement("div");
-                card.className = `bg-cardBg border ${esCancelado ? 'border-danger/30 opacity-60' : 'border-accent/30'} rounded-2xl p-5 relative overflow-hidden shadow-sm`;
+                card.className = `bg-cardBg border ${esCancelado ? 'border-danger/30 opacity-60' : 'border-borderColor hover:border-accent/40'} rounded-3xl p-5 relative overflow-hidden shadow-sm transition-all`;
                 
                 card.innerHTML = `
                     <div class="absolute left-0 top-0 w-1.5 h-full ${esCancelado ? 'bg-danger' : 'bg-accent'}"></div>
+                    
                     <div class="flex justify-between items-start mb-3 pl-2">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl font-extrabold text-white">${t.hora} hs</span>
-                                <span class="text-[10px] text-textMuted border border-borderColor px-2 py-0.5 rounded-full">${t.id}</span>
+                                <span class="text-2xl font-black text-white tracking-tight">${t.hora || '--:--'} <span class="text-xs font-medium text-textMuted">hs</span></span>
+                                <span class="text-[10px] font-mono text-textMuted bg-appBg border border-borderColor px-2 py-0.5 rounded-full">${t.id || 'S/ID'}</span>
                             </div>
-                            <h4 class="text-lg font-bold text-white leading-none">${t.nombre}</h4>
-                            <p class="text-sm text-accent font-semibold mt-1">${t.servicio} <span class="text-textMuted font-normal">(${t.precio})</span></p>
+                            
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-extrabold text-white leading-tight">${t.nombre || 'Sin Nombre'}</h3>
+                                ${esClienteFrecuente ? '<span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-500/30">⭐ Fiel</span>' : ''}
+                            </div>
+                            
+                            <p class="text-sm font-semibold text-accent mt-0.5">
+                                ${t.servicio || 'Servicio'} 
+                                <span class="text-textMuted font-normal text-xs">(${t.precio ? (precioStr.includes('$') ? precioStr : '$' + precioStr) : '$0'})</span>
+                            </p>
                         </div>
+                        
                         <div class="text-right">
-                            <span class="text-[10px] font-bold tracking-widest px-2 py-1 rounded-lg uppercase ${esCancelado ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'}">
+                            <span class="text-[10px] font-black tracking-wider px-2.5 py-1 rounded-xl uppercase ${esCancelado ? 'bg-danger/10 text-danger border border-danger/20' : 'bg-success/10 text-success border border-success/20'}">
                                 ${t.estado || 'CONFIRMADO'}
                             </span>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between text-sm border-t border-borderColor/50 pt-3 mt-2 pl-2">
-                        <span class="text-gray-300">📱 ${t.telefono}</span>
-                        <div class="text-[10px] text-textMuted">
-                            Vino: <strong class="text-white">${t.visitasPrevias || 0}</strong> | Falló: <span class="${t.cancelacionesPrevias > 0 ? 'text-danger font-bold' : ''}">${t.cancelacionesPrevias || 0}</span>
+
+                    <!-- DATOS DE CONTACTO & FIDELIDAD -->
+                    <div class="flex items-center justify-between text-xs border-t border-borderColor/60 pt-3 mt-2 pl-2">
+                        <div class="flex items-center gap-2">
+                            <a href="https://wa.me/549${telefonoLimpio}?text=${encodeURIComponent(`Hola ${t.nombre}, te escribo de MAV Studio por tu turno de las ${t.hora} hs.`)}" target="_blank"
+                               class="bg-whatsapp/10 hover:bg-whatsapp/20 text-whatsapp font-bold px-3 py-1.5 rounded-xl border border-whatsapp/30 flex items-center gap-1 active:scale-95 transition">
+                                💬 WhatsApp
+                            </a>
+                            <a href="tel:${telefonoLimpio}" class="text-gray-400 hover:text-white bg-appBg border border-borderColor px-2.5 py-1.5 rounded-xl text-xs">
+                                📞
+                            </a>
+                        </div>
+                        
+                        <div class="text-[11px] text-textMuted text-right">
+                            Visitas: <strong class="text-white">${t.visitasPrevias || 0}</strong> 
+                            ${Number(t.cancelacionesPrevias) > 0 ? `| <span class="text-danger font-bold">Falló: ${t.cancelacionesPrevias}</span>` : ''}
                         </div>
                     </div>
+
                     ${!esCancelado ? `
-                        <div class="mt-4 pt-3 border-t border-borderColor/50 pl-2">
-                            <p class="text-[10px] font-bold text-textMuted tracking-widest mb-2">NOTIFICAR DEMORA</p>
-                            <div class="flex gap-2 mb-2">
-                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 10)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-xl hover:bg-orange-500/10 active:scale-95 transition-all">+10m</button>
-                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 15)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-xl hover:bg-orange-500/10 active:scale-95 transition-all">+15m</button>
-                                <button onclick="avisarDemora('${t.id}', '${t.telefono}', '${t.nombre}', '${t.hora}', 20)" class="flex-1 bg-cardBg border border-orange-500/50 text-orange-400 text-xs font-bold py-2 rounded-xl hover:bg-orange-500/10 active:scale-95 transition-all">+20m</button>
+                        <!-- ACCIONES RÁPIDAS -->
+                        <div class="mt-4 pt-3 border-t border-borderColor/60 pl-2">
+                            <p class="text-[10px] font-black text-textMuted tracking-widest uppercase mb-2">Avisar Demora</p>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <button onclick="avisarDemora('${t.id}', '${telefonoLimpio}', '${t.nombre}', '${t.hora}', 10, this)" class="bg-appBg border border-amber-500/40 text-amber-400 text-xs font-bold py-2 rounded-xl hover:bg-amber-500/10 active:scale-95 transition">+10 min</button>
+                                <button onclick="avisarDemora('${t.id}', '${telefonoLimpio}', '${t.nombre}', '${t.hora}', 15, this)" class="bg-appBg border border-amber-500/40 text-amber-400 text-xs font-bold py-2 rounded-xl hover:bg-amber-500/10 active:scale-95 transition">+15 min</button>
+                                <button onclick="avisarDemora('${t.id}', '${telefonoLimpio}', '${t.nombre}', '${t.hora}', 20, this)" class="bg-appBg border border-amber-500/40 text-amber-400 text-xs font-bold py-2 rounded-xl hover:bg-amber-500/10 active:scale-95 transition">+20 min</button>
                             </div>
-                            <button onclick="cancelarTurnoBarbero('${t.id}')" class="w-full bg-danger/10 text-danger text-xs font-bold py-2.5 rounded-xl border border-danger/20 hover:bg-danger/20 active:scale-95 transition-all mt-1">
-                                ❌ Cancelar Turno
+                            
+                            <button onclick="cancelarTurnoBarbero('${t.id}', '${t.nombre}', this)" class="w-full bg-danger/10 text-danger text-xs font-bold py-2.5 rounded-xl border border-danger/20 hover:bg-danger/20 active:scale-95 transition mt-1">
+                                ❌ Cancelar Turno y Notificar
                             </button>
                         </div>
                     ` : ''}
                 `;
                 cont.appendChild(card);
             });
+
             actualizarStats(turnos.length, totalCaja, cancelados);
         }
 
@@ -244,37 +395,60 @@
             document.getElementById("stat-cancelados").textContent = cancelados;
         }
 
-        async function avisarDemora(id, telefono, nombre, hora, minutos) {
-            if (!confirm(`¿Notificar a ${nombre} que tenés ${minutos} min de demora?`)) return;
+        async function avisarDemora(id, telefono, nombre, hora, minutos, btn) {
+            if (!confirm(`¿Notificar por mail a ${nombre} que tenés ${minutos} min de demora?`)) return;
+            
+            const textoOriginal = btn.innerText;
+            btn.innerText = "⏳...";
+            btn.disabled = true;
+
             try {
                 const res = await fetch(WEBHOOK_ADMIN, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        accion: "avisar_demora", usuario: sessionStorage.getItem("barbero_user"),
-                        password: sessionStorage.getItem("barbero_pass"), id, telefono, nombre, hora, minutos
+                        accion: "avisar_demora",
+                        usuario: sessionStorage.getItem("barbero_user"),
+                        password: sessionStorage.getItem("barbero_pass"),
+                        id, telefono, nombre, hora, minutos
                     })
                 });
                 const data = await res.json();
-                alert(data.mensaje || `Aviso de demora enviado.`);
-            } catch (err) { alert("Error de conexión al enviar el aviso."); }
+                alert(data.mensaje || `Aviso de demora enviado con éxito.`);
+            } catch (err) {
+                alert("Error de conexión al enviar el aviso de demora.");
+            } finally {
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
         }
 
-        async function cancelarTurnoBarbero(id) {
-            if (!confirm("¿Estás seguro de cancelar este turno? El cliente será notificado.")) return;
+        async function cancelarTurnoBarbero(id, nombre, btn) {
+            if (!confirm(`¿Estás seguro de cancelar el turno de ${nombre}? Se enviará un mail automático avisándole.`)) return;
+            
+            const textoOriginal = btn.innerText;
+            btn.innerText = "Cancelando...";
+            btn.disabled = true;
+
             try {
                 const res = await fetch(WEBHOOK_ADMIN, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        accion: "cancelar", usuario: sessionStorage.getItem("barbero_user"),
-                        password: sessionStorage.getItem("barbero_pass"), id, canceladoPor: "barbero"
+                        accion: "cancelar",
+                        usuario: sessionStorage.getItem("barbero_user"),
+                        password: sessionStorage.getItem("barbero_pass"),
+                        id, canceladoPor: "barbero"
                     })
                 });
                 const data = await res.json();
                 alert(data.mensaje || "Turno cancelado correctamente.");
                 cargarAgenda();
-            } catch (err) { alert("Error de conexión al cancelar."); }
+            } catch (err) {
+                alert("Error de conexión al cancelar el turno.");
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
